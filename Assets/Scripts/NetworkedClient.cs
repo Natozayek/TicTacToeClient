@@ -6,33 +6,49 @@ using UnityEngine.Networking;
 
 public class NetworkedClient : MonoBehaviour
 {
-
+    public static NetworkedClient Instance;
+    
+    static GameObject sManager;
     int connectionID;
     int maxConnections = 1000;
     int reliableChannelID;
     int unreliableChannelID;
     int hostID;
-    int socketPort = 5491;
+    int socketPort = 3333;
     byte error;
     bool isConnected = false;
+    bool stablishedNetwork;
     int ourClientID;
 
     // Start is called before the first frame update
-    void Start()
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
+    private void Start()
     {
         Connect();
     }
-
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.S))
-            SendMessageToHost("Hello from client");
 
-        UpdateNetworkConnection();
+
+        if (isConnected)
+        {
+
+            if(Input.GetKey(KeyCode.S))
+            {
+               // SendMessageToHost();
+            }
+            UpdateNetworkConnection();
+        }
+       //
     }
 
-    private void UpdateNetworkConnection()
+    public void UpdateNetworkConnection()
     {
         if (isConnected)
         {
@@ -63,7 +79,7 @@ public class NetworkedClient : MonoBehaviour
         }
     }
 
-    private void Connect()
+    public void Connect()
     {
 
         if (!isConnected)
@@ -79,13 +95,17 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "192.168.0.27", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "192.168.0.200", socketPort, 0, out error); // server is local on network
+           
+            Debug.Log(connectionID + "   -> cID.");
+           
+            //DataManager.AddConnectionID(connectionID);
 
             if (error == 0)
             {
                 isConnected = true;
 
-                Debug.Log("Connected, id = " + connectionID);
+                Debug.Log("Connected, id = " + connectionID + " SUCCESS");
 
             }
         }
@@ -112,5 +132,13 @@ public class NetworkedClient : MonoBehaviour
         return isConnected;
     }
 
+    public int  GetConnectionID()
+    {
+        return connectionID;
+    }
 
+    static public void SetSystemManager(GameObject SystemManager)
+    {
+        sManager = SystemManager;
+    }
 }

@@ -20,6 +20,8 @@ public class NetworkedClient : MonoBehaviour
     bool stablishedNetwork;
     int ourClientID;
 
+    public int message = -1;
+
     // Start is called before the first frame update
 
     private void Awake()
@@ -95,7 +97,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "192.168.0.200", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "192.168.0.13", socketPort, 0, out error); // server is local on network
            
             Debug.Log(connectionID + "   -> cID.");
            
@@ -122,9 +124,51 @@ public class NetworkedClient : MonoBehaviour
         NetworkTransport.Send(hostID, connectionID, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
 
+    public void messageToServer(string msg)
+    {
+
+        
+        //string[] dataReceived = msg.Split(',');
+        //switch (int.Parse(dataReceived[0]))
+        //{
+        //    case 0:
+
+        //        break;
+
+        //    case 1:
+        //        break;
+        //}
+    }
+
     private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
+
+        string[] dataReceived = msg.Split(',');
+        switch (int.Parse(dataReceived[0]))
+        {
+            case 0://Acess granted
+                message = 0;
+                break;
+            case 1:
+                message = 1;// ERROR-  Account name already exist
+                break;
+
+            case 2:
+                message = 2;   //ERROR Loging Verification - Wrong username 
+                break;
+            case 3:
+                message = 3; //ERROR Loging Verification - Wrong Password
+                break;
+            case 4:
+                message = 4; //Account created successfully 
+                Debug.Log(dataReceived[1]);
+                break;
+            case 5:
+                break;
+        }
+
+
     }
 
     public bool IsConnected()

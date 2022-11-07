@@ -12,6 +12,15 @@ public class ControllerManager : MonoBehaviour
     public Button[] playerSpaces; //Playable space for game
     public int[] usedButton;
 
+    public Text winnerText;//holds text component of winner text
+    public GameObject[] winLines;//holds lines of winning display
+
+
+    public int Player1Score;
+    public int Player2Score;
+
+    public Text player1ScoreText;
+    public Text player2ScoreText;
 
     // Start is called before the first frame update
     void Start()
@@ -94,9 +103,73 @@ public class ControllerManager : MonoBehaviour
             if (solutions[i] == 3*(turnofPlayer+1))
             {
                 Debug.Log("Player " + turnofPlayer + " won!");
+
+                DisplayWinState(i);
                 return;
             }
         }
 
     }
+
+    void DisplayWinState(int index)
+    {
+        winnerText.gameObject.SetActive(true);
+        if(turnofPlayer == 0)
+        {
+            winnerText.text = "Player X Wins!";
+
+            Player1Score++;
+
+            player1ScoreText.text = Player1Score.ToString();
+        }
+        else if(turnofPlayer ==1)
+        {
+            winnerText.text = "Player 0 Wins!";
+
+            Player2Score++;
+            player2ScoreText.text = Player2Score.ToString();
+        }
+
+        
+
+        for (int i = 0; i < playerSpaces.Length; i++)
+        {
+            playerSpaces[i].interactable = false;//disable buttons
+         
+        }
+        winLines[index].SetActive(true);// set active line at player index
+
+    }
+
+    public void ResetGameVariables()
+    {
+        gameSetUp();
+
+        for (int i = 0; i < winLines.Length; i++)
+        {
+            winLines[i].SetActive(false);//Disable all lines
+        }
+        winnerText.text = "";
+
+
+
+    }
+
+public void LeaveGame()
+    {
+
+        ResetGameVariables();
+        Player1Score = 0;
+        Player2Score = 0;
+        player1ScoreText .text= "";
+        player1ScoreText.text = "";
+        player2ScoreText.text = "";
+
+        SystemManager.Instance.LeaveGame();
+        //How to expulse other player from game and gameroom, to lobby?
+        
+
+
+    }
+
 }

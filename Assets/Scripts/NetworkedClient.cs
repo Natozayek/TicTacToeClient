@@ -21,6 +21,7 @@ public class NetworkedClient : MonoBehaviour
     int ourClientID;
 
     public int message = -1;
+    public string stringMessage = "";
 
     // Start is called before the first frame update
 
@@ -123,23 +124,7 @@ public class NetworkedClient : MonoBehaviour
         byte[] buffer = Encoding.Unicode.GetBytes(msg);
         NetworkTransport.Send(hostID, connectionID, reliableChannelID, buffer, msg.Length * sizeof(char), out error);
     }
-
-    public void messageToServer(string msg)
-    {
-
-        
-        //string[] dataReceived = msg.Split(',');
-        //switch (int.Parse(dataReceived[0]))
-        //{
-        //    case 0:
-
-        //        break;
-
-        //    case 1:
-        //        break;
-        //}
-    }
-
+ 
     private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
@@ -165,6 +150,14 @@ public class NetworkedClient : MonoBehaviour
                 Debug.Log(dataReceived[1]);
                 break;
             case 5:
+
+                message = 5;
+                stringMessage = dataReceived[1].ToString();
+                Debug.Log(stringMessage + "Message");
+                break;
+            case 6:
+                message = 6;//Join game room
+              //  SystemManager.Instance.gameRoomNameText.text = dataReceived[1].ToString();
                 break;
         }
 

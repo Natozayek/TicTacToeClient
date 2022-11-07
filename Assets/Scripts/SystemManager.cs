@@ -23,8 +23,10 @@ public class SystemManager : MonoBehaviour
     [SerializeField] public InputField newUsername;
     [SerializeField] public InputField newPassword;
 
-    [SerializeField] public InputField lobbyName;
-    [SerializeField] public Text lobbyNameText;
+    [SerializeField] public InputField gameRoomName;
+    [SerializeField] public GameObject gameRoomNameParent;
+
+    [SerializeField] public Text roomName1;
 
     //New user ui
     [SerializeField]GameObject newUser;
@@ -39,6 +41,7 @@ public class SystemManager : MonoBehaviour
     public float timer;
     protected int connectionID;
 
+   
     public int ConnectionID { get { return connectionID; } set { connectionID = value; } }
 
     private void Awake()
@@ -51,6 +54,7 @@ public class SystemManager : MonoBehaviour
     {
      // DataManager.SetSystemManager(gameObject);
       NetworkedClient.SetSystemManager(gameObject);
+       
     }
 
     private void Update()
@@ -60,6 +64,8 @@ public class SystemManager : MonoBehaviour
             ShowMessage();
             NetworkedClient.Instance.message = -1;
         }
+        
+     
         
     }
     public void ShowMessage()
@@ -102,7 +108,16 @@ public class SystemManager : MonoBehaviour
             messageInfo.GetComponent<Text>().text = "Account created, please login!";
             StartCoroutine(DisableMessage());
         }
+        if (NetworkedClient.Instance.message == 5)
+        {
+            newGameRoom.gameObject.SetActive(true);
+            gameRoomNameParent.gameObject.SetActive(true);
+            roomName1.gameObject.SetActive(true);
 
+            string data = NetworkedClient.Instance.stringMessage.ToString();
+            jointoRoom(data);
+            StartCoroutine(DisableMessage());
+        }
 
         // USER ALREADY LOGGED
         //possible ifstatement
@@ -155,15 +170,17 @@ public class SystemManager : MonoBehaviour
         return (newPassword.text);
     }
 
-    public string GetLobbyName()
+    public string GetGameRoomName()
     {
-        return lobbyName.text;
+        return gameRoomName.text;
     }
 
     public int GetConnectionID()
     {
         return ConnectionID;
     }
+
+    
 
     //Helpers
 
@@ -199,24 +216,32 @@ public class SystemManager : MonoBehaviour
         }
     }
 
-    public IEnumerator joinGameRoomCoro()
+    public void CreateORJoinGameRoom()
     {
+        string gameroomCreation = "2," + GetUsername() + "," + GetGameRoomName().ToString();
+        NetworkedClient.Instance.SendMessageToHost(gameroomCreation);
+        
+    }
+
+    public void jointoRoom(string roomName)
+    {
+    
+    
+        Debug.Log(roomName + "JOIN TO ROOM NAME ");
+        if(roomName1.IsActive())
+        roomName1.GetComponent<Text>().text = roomName;
         inputBoxForNewGameRoom.SetActive(false);
-        yield return new WaitForSeconds(1.0f);
-
-        newGameRoom.SetActive(true);
-        lobbyNameText.text = GetLobbyName();
     }
 
-    public void JoinGameRoomLobby()
-    {
-        StartCoroutine(joinGameRoomCoro());
-    }
+
     public void LeaveGameRoomLobby()
     {
-        lobbyNameText.text = "";
+        //gameRoomNameText.text = "";
+
+
         inputBoxForNewGameRoom.SetActive(true);
         newGameRoom.SetActive(false);
+        
         
     }    
     public void GameReady()
@@ -224,6 +249,19 @@ public class SystemManager : MonoBehaviour
         isThePlayerReady = true;
         newGameRoom.SetActive(false);
         newGame.SetActive(true);
+    }
+    public void LeaveGame()
+    {
+        //After reseting variables in cotroller manager, this function will be called to handle the "scene" transition;
+        isThePlayerReady = false;
+        newGameRoom.SetActive(false);
+        newGame.SetActive(false);
+        inputBoxForNewGameRoom.SetActive(true);
+        //gameRoomName.text = "";
+        //roomName1.text = ""; 
+        //Notify the server i have left the game
+        //What does the server needs to know and do?
+
     }
 
 }

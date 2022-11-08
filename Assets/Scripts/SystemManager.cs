@@ -36,6 +36,7 @@ public class SystemManager : MonoBehaviour
 
     private bool accesGranted;
     private bool isThePlayerReady;
+    private bool GameIsReady;
 
 
     public float timer;
@@ -130,7 +131,17 @@ public class SystemManager : MonoBehaviour
 
             inputBoxForNewGameRoom.SetActive(false);
             string data = NetworkedClient.Instance.stringMessage.ToString();
+            GameIsReady = true;
             jointoRoom(data);
+            
+        }
+        if (NetworkedClient.Instance.message == 7)
+        {
+
+            Debug.Log("Exited game room " + NetworkedClient.Instance.stringMessage.ToString());
+            Debug.Log("Begin GAME");
+            GameReady();
+
         }
 
 
@@ -189,6 +200,13 @@ public class SystemManager : MonoBehaviour
         roomName1.GetComponent<Text>().text = roomName;
         inputBoxForNewGameRoom.SetActive(false);
         Debug.Log("Room: " + roomName + " joined");
+
+        if(GameIsReady)
+        {
+            Debug.Log("Notify server... GAME READY");
+            string startGame = "3," + GetGameRoomName().ToString();
+            NetworkedClient.Instance.SendMessageToHost(startGame);
+        }
     }
 
 
@@ -201,9 +219,9 @@ public class SystemManager : MonoBehaviour
     }    
     public void GameReady()
     {
-        isThePlayerReady = true;
         newGameRoom.SetActive(false);
         newGame.SetActive(true);
+       
     }
     public void LeaveGame()
     {

@@ -48,7 +48,7 @@ public class NetworkedClient : MonoBehaviour
             }
             UpdateNetworkConnection();
         }
-       //
+       
     }
 
     public void UpdateNetworkConnection()
@@ -80,6 +80,8 @@ public class NetworkedClient : MonoBehaviour
                     break;
             }
         }
+
+
     }
 
     public void Connect()
@@ -160,6 +162,13 @@ public class NetworkedClient : MonoBehaviour
                 stringMessage = dataReceived[1].ToString();
                 Debug.Log(stringMessage + "Message");
         
+                break;
+
+            case 7:
+                message = 7;//Start Match
+                stringMessage = dataReceived[1].ToString();
+                Debug.Log(stringMessage + "Message");
+
                 break;
         }
 

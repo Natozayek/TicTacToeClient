@@ -142,6 +142,17 @@ public class SystemManager : MonoBehaviour
             Debug.Log("Begin GAME");
             GameReady();
 
+            if(ControllerManager.Instance.isActiveAndEnabled)
+            ControllerManager.Instance.turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
+            
+        
+
+        }
+
+        if (NetworkedClient.Instance.message == 8)
+        {
+            ControllerManager.Instance.reciveButtonClicked(NetworkedClient.Instance.buttonIndex, NetworkedClient.Instance.turnOfPlayer);
+            Debug.Log(" Player move received");
         }
 
 

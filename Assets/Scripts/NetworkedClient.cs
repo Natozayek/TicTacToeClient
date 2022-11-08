@@ -23,6 +23,9 @@ public class NetworkedClient : MonoBehaviour
     public int message = -1;
     public string stringMessage = "";
 
+    public int buttonIndex;
+    public int turnOfPlayer;
+
     // Start is called before the first frame update
 
     private void Awake()
@@ -167,8 +170,20 @@ public class NetworkedClient : MonoBehaviour
             case 7:
                 message = 7;//Start Match
                 stringMessage = dataReceived[1].ToString();
+                turnOfPlayer = int.Parse(dataReceived[2]);
                 Debug.Log(stringMessage + "Message");
 
+                Debug.Log(turnOfPlayer + " its your turn ");
+
+
+                break;
+
+            case 8:
+                message = 8;//PlayerXMadeaMove
+                buttonIndex = int.Parse(dataReceived[1]);
+                turnOfPlayer = int.Parse(dataReceived[2]);
+                Debug.Log("Button IndexPressedBy otherPlayer.  -->" + buttonIndex);
+                Debug.Log("Turn of player was -> " + turnOfPlayer);
                 break;
         }
 

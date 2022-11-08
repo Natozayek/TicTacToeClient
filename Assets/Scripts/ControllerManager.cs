@@ -22,10 +22,18 @@ public class ControllerManager : MonoBehaviour
     public Text player1ScoreText;
     public Text player2ScoreText;
 
-    // Start is called before the first frame update
+    public GameObject resetGameButton;
+
+    public static ControllerManager Instance;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     void Start()
     {
         gameSetUp();
+        
     }
 
     void gameSetUp()
@@ -45,6 +53,12 @@ public class ControllerManager : MonoBehaviour
         {
             usedButton[i] = -200;
         }
+
+        if(turnofPlayer == 1)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
     }
     // Update is called once per frame
     void Update()
@@ -57,30 +71,72 @@ public class ControllerManager : MonoBehaviour
         playerSpaces[buttonIndex].image.sprite = playerIcons[turnofPlayer];
         playerSpaces[buttonIndex].interactable = false;
 
-        usedButton[buttonIndex] = turnofPlayer+1;
+        usedButton[buttonIndex] = turnofPlayer + 1;
         turnCount++;
 
         if(turnCount > 4)
         {
             CheckWinCondition();
         }
-
-        if(turnofPlayer == 0)
+        //Player X has made a move notify button index pressed and which player made a move before 
+        NotifyServer(buttonIndex, turnofPlayer);
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        if (turnofPlayer == 0)
         {
+            
             turnofPlayer = 1; 
             turnDisplay[1].SetActive(true); 
             turnDisplay[0].SetActive(false);
-           
+          
         }
         else
         {
+  
+            turnofPlayer = 0;
+            turnDisplay[0].SetActive(true);
+            turnDisplay[1].SetActive(false);
+          
+        }
+
+
+    }
+
+    public void reciveButtonClicked(int buttonIndex, int playerTurn)
+    {
+     
+        playerSpaces[buttonIndex].image.sprite = playerIcons[turnofPlayer];
+        playerSpaces[buttonIndex].interactable = false;
+
+        usedButton[buttonIndex] = playerTurn + 1;
+        turnCount++;
+
+        if (turnCount > 4)
+        {
+            CheckWinCondition();
+        }
+
+        if (playerTurn == 0)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            turnofPlayer = 1;
+            turnDisplay[1].SetActive(true);
+            turnDisplay[0].SetActive(false);
+
+        }
+        else
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             turnofPlayer = 0;
             turnDisplay[0].SetActive(true);
             turnDisplay[1].SetActive(false);
 
         }
-    }
 
+      
+    }
     public void CheckWinCondition() // 8 possibles way to win //3 horizontal lines //3 vertical lines and 2 diagonal lines
     {
         int possibleHorizontalSol1 = usedButton[0] + usedButton[1] + usedButton[2];
@@ -105,6 +161,7 @@ public class ControllerManager : MonoBehaviour
                 Debug.Log("Player " + turnofPlayer + " won!");
 
                 DisplayWinState(i);
+                
                 return;
             }
         }
@@ -114,7 +171,8 @@ public class ControllerManager : MonoBehaviour
     void DisplayWinState(int index)
     {
         winnerText.gameObject.SetActive(true);
-        if(turnofPlayer == 0)
+        resetGameButton.gameObject.SetActive(true);
+        if (turnofPlayer == 0)
         {
             winnerText.text = "Player X Wins!";
 
@@ -138,6 +196,8 @@ public class ControllerManager : MonoBehaviour
          
         }
         winLines[index].SetActive(true);// set active line at player index
+
+       
 
     }
 
@@ -167,9 +227,15 @@ public void LeaveGame()
 
         SystemManager.Instance.LeaveGame();
         //How to expulse other player from game and gameroom, to lobby?
-        
-
 
     }
 
+
+    public void NotifyServer(int buttonIndex, int turnOfPlayerX)
+    {
+        Debug.Log("PLAYER X MOVED, Pressed button at index " + buttonIndex + " and it was turnofPlayer = " + turnOfPlayerX);
+        string playerMoved = "4," + buttonIndex.ToString() + "," + turnOfPlayerX.ToString();
+        NetworkedClient.Instance.SendMessageToHost(playerMoved);
+        Debug.Log("MessageSent to Server");
+    }
 }

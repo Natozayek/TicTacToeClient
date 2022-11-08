@@ -157,7 +157,9 @@ public class NetworkedClient : MonoBehaviour
                 break;
             case 6:
                 message = 6;//Join game room
-              //  SystemManager.Instance.gameRoomNameText.text = dataReceived[1].ToString();
+                stringMessage = dataReceived[1].ToString();
+                Debug.Log(stringMessage + "Message");
+        
                 break;
         }
 

@@ -57,6 +57,8 @@ public class SystemManager : MonoBehaviour
        
     }
 
+
+
     private void Update()
     {
         if(NetworkedClient.Instance.message >= 0)
@@ -68,6 +70,7 @@ public class SystemManager : MonoBehaviour
      
         
     }
+    //FUNCTION TO HANDLE EVENTS IN GAME
     public void ShowMessage()
     {
         if (NetworkedClient.Instance.message == 0)//ACCESS GRANTED = 0
@@ -102,13 +105,14 @@ public class SystemManager : MonoBehaviour
             messageADenied.SetActive(true);
             StartCoroutine(DisableMessage());
         }
-
+        //ACCOUNT CREATED = 4. READY TO LOGGING
         if (NetworkedClient.Instance.message == 4)
         {
             messageInfo.GetComponent<Text>().text = "Account created, please login!";
             StartCoroutine(DisableMessage());
         }
-        if (NetworkedClient.Instance.message == 5)
+        //CREATE ROOM - with name string data.
+        if (NetworkedClient.Instance.message == 5) 
         {
             newGameRoom.gameObject.SetActive(true);
             gameRoomNameParent.gameObject.SetActive(true);
@@ -116,8 +120,19 @@ public class SystemManager : MonoBehaviour
 
             string data = NetworkedClient.Instance.stringMessage.ToString();
             jointoRoom(data);
-            StartCoroutine(DisableMessage());
         }
+        // JOIN ROOM - with name string data
+        if (NetworkedClient.Instance.message == 6)
+        {
+            newGameRoom.gameObject.SetActive(true);
+            gameRoomNameParent.gameObject.SetActive(true);
+            roomName1.gameObject.SetActive(true);
+
+            inputBoxForNewGameRoom.SetActive(false);
+            string data = NetworkedClient.Instance.stringMessage.ToString();
+            jointoRoom(data);
+        }
+
 
         // USER ALREADY LOGGED
         //possible ifstatement
@@ -125,24 +140,17 @@ public class SystemManager : MonoBehaviour
 
     }
 
-    //FUNCTION TO VERIFY WITH SERVER THE LOGING USERNAME AND PASSWORD
-    public void LoginVerification()
-    {
-        Debug.Log("LOGIN VERIFICATION");
-        string userNameNpassword = "0," + GetUsername() + "," + GetPassWord();
 
-        NetworkedClient.Instance.SendMessageToHost(userNameNpassword);
-
-      
-
-    }
-
-    //Function for create account button
+    #region FUNCTIONS TO LET KNOW SERVER ABOUT NEW ACCOUNT CREATION /LOGGING VERIFICATION/ && EVENTS IN LOGING BOX SCENE
+    // FUNCTION TO CREATE ACCOUNT IN SERVER
     public void CreateNewAccount()
     {
+        Debug.Log("CREATING ACCOUNT");
         string userNameNpassword =  "1," + GetNewUsername() + "," + GetNewPassWord();
         NetworkedClient.Instance.SendMessageToHost(userNameNpassword);
+        Debug.Log("MessageSent to Server");
 
+        //Clearing input boxes of account creation
         newUser.SetActive(false);
         newUsername.text = "";
         newPassword.text = "";
@@ -152,97 +160,44 @@ public class SystemManager : MonoBehaviour
         newUser.SetActive(true);
     }
 
-    //Getters
-    public string GetUsername()
+    //FUNCTION TO VERIFY WITH SERVER THE LOGING USERNAME AND PASSWORD
+    public void LoginVerification()
     {
-        return (username.text);
-    }
-    public string GetPassWord()
-    {
-        return (password.text);
-    }
-    public string GetNewUsername()
-    {   
-        return(newUsername.text);
-    }
-    public string GetNewPassWord()
-    {
-        return (newPassword.text);
+        Debug.Log("LOGIN VERIFICATION");
+        string userNameNpassword = "0," + GetUsername() + "," + GetPassWord();
+        NetworkedClient.Instance.SendMessageToHost(userNameNpassword);
+        Debug.Log("MessageSent to Server");
     }
 
-    public string GetGameRoomName()
-    {
-        return gameRoomName.text;
-    }
+    #endregion
 
-    public int GetConnectionID()
-    {
-        return ConnectionID;
-    }
 
-    
-
-    //Helpers
-
-    public void Disabling()
-    {
-       
-        DisableMessage();   
-    }
-    public IEnumerator DisableMessage()
-    {
-        Debug.Log("DISABLIGN");
-        
-        yield return new WaitForSeconds(4.0f);
-
-        //message.gameObject.SetActive(false);
-        messageInfo.GetComponent<Text>().text = "Please fill with name\r\n and password";
-        messageAGranted.SetActive(false);
-        messageADenied.SetActive(false);
-        messageWrongUsername.SetActive(false);
-       // messageUsernameAlreadyExist1.SetActive(false);
-       // messageAccountHasBeenCreated.SetActive(false);
-
-    
-       
-        username.text = "";
-        password.text = "";
-
-        if(accesGranted)
-        {
-            Debug.Log("Disabling loging box");
-            loginBox.SetActive(false);
-            inputBoxForNewGameRoom.SetActive(true);
-        }
-    }
-
+    #region FUNCTIONS TO LET KNOW SERVER ABOUT GAMEROOM CREATION OR JOIN/ PREPARE GAME/ LEAVE GAME/ LEAVE GAME ROOM
     public void CreateORJoinGameRoom()
     {
+        Debug.Log("CREATING OR JOINING ROOM EVENTS ->> name: " +GetGameRoomName());
         string gameroomCreation = "2," + GetUsername() + "," + GetGameRoomName().ToString();
         NetworkedClient.Instance.SendMessageToHost(gameroomCreation);
-        
+        Debug.Log("MessageSent to Server");
+
     }
 
     public void jointoRoom(string roomName)
     {
-    
-    
-        Debug.Log(roomName + "JOIN TO ROOM NAME ");
+        Debug.Log("JOINING TO ROOM --->   " + roomName );
         if(roomName1.IsActive())
         roomName1.GetComponent<Text>().text = roomName;
         inputBoxForNewGameRoom.SetActive(false);
+        Debug.Log("Room: " + roomName + " joined");
     }
 
 
     public void LeaveGameRoomLobby()
     {
-        //gameRoomNameText.text = "";
-
 
         inputBoxForNewGameRoom.SetActive(true);
         newGameRoom.SetActive(false);
-        
-        
+       
     }    
     public void GameReady()
     {
@@ -257,11 +212,78 @@ public class SystemManager : MonoBehaviour
         newGameRoom.SetActive(false);
         newGame.SetActive(false);
         inputBoxForNewGameRoom.SetActive(true);
+
         //gameRoomName.text = "";
         //roomName1.text = ""; 
+        
+        
         //Notify the server i have left the game
         //What does the server needs to know and do?
 
     }
+    #endregion
+
+
+    #region GETTERS for Username/ Password/ NewUsername/ NewPassword/ GameRoomName
+    //Getters
+    public string GetUsername()
+    {
+        return (username.text);
+    }
+    public string GetPassWord()
+    {
+        return (password.text);
+    }
+    public string GetNewUsername()
+    {
+        return (newUsername.text);
+    }
+    public string GetNewPassWord()
+    {
+        return (newPassword.text);
+    }
+
+    public string GetGameRoomName()
+    {
+        return gameRoomName.text;
+    }
+    public int GetConnectionID()
+    {
+        return ConnectionID;
+    }
+
+    #endregion
+
+    #region    HELPER FUNCTIONS TO RESET VARIABLES IN LOGING BOX
+    //public void Disabling()
+    //{
+    //    DisableMessage();
+    //}
+    public IEnumerator DisableMessage()
+    {
+        Debug.Log("DISABLIGN MESSAGES IN LOGING BOX");
+        yield return new WaitForSeconds(2.0f);
+        messageInfo.GetComponent<Text>().text = "Please fill with name\r\n and password";
+        messageAGranted.SetActive(false);
+        messageADenied.SetActive(false);
+        messageWrongUsername.SetActive(false);
+
+        //Reseting vaiables in loging box
+        username.text = "";
+        password.text = "";
+
+        if (accesGranted)// Go to lobby
+        {
+            Debug.Log("Disabling loging box");
+
+            //loginBox.gameObject.SetActive(false);
+            GameObject.Find("LoginBox").gameObject.active = false;
+
+            Debug.Log("Login box disabled.");
+
+            inputBoxForNewGameRoom.gameObject.active = true;
+        }
+    }
+    #endregion
 
 }

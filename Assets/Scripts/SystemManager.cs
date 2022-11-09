@@ -156,6 +156,13 @@ public class SystemManager : MonoBehaviour
             ControllerManager.Instance.ResetGameVariables();
         }
 
+        if(NetworkedClient.Instance.message == 10)
+        {
+
+            messageInfo.GetComponent<Text>().text = "Username already logged in";
+            StartCoroutine(DisableMessage());
+        }
+
 
         // USER ALREADY LOGGED
         //possible ifstatement
@@ -220,7 +227,6 @@ public class SystemManager : MonoBehaviour
             NetworkedClient.Instance.SendMessageToHost(startGame);
         }
     }
-
 
     public void LeaveGameRoomLobby()
     {

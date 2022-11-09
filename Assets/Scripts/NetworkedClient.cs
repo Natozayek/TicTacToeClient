@@ -134,7 +134,7 @@ public class NetworkedClient : MonoBehaviour
  
     private void ProcessRecievedMsg(string msg, int id)
     {
-        Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
+        Debug.Log("Message ==> " + msg + ".    ID:" + id);
 
         string[] dataReceived = msg.Split(',');
         switch (int.Parse(dataReceived[0]))
@@ -194,6 +194,14 @@ public class NetworkedClient : MonoBehaviour
                 Debug.Log(roomName + "Message");
                 Debug.Log(turnOfPlayer + " its your turn ");
                 message = 9;//Restart Match 
+                break;
+
+
+            case 10:
+                message = 10;
+                Debug.Log(stringMessage);
+
+
                 break;
         }
         

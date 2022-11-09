@@ -40,6 +40,7 @@ public class ControllerManager : MonoBehaviour
 
     public void gameSetUp()
     {
+ 
         Debug.Log(turnofPlayer + "<= turn of player");
 
         turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
@@ -77,6 +78,7 @@ public class ControllerManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if(gameDone)
         {
             Cursor.visible = true;
@@ -84,6 +86,8 @@ public class ControllerManager : MonoBehaviour
            
             resetGameButton.gameObject.SetActive(true);
         }
+
+
         
     }
 
@@ -101,8 +105,13 @@ public class ControllerManager : MonoBehaviour
         {
             CheckWinCondition(turnofPlayer);
         }
+
+        if (turnCount >= 9)
+        {
+            gameDone = true;
+        }
         //Player X has made a move notify button index pressed and which player made a move before 
-      
+
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 

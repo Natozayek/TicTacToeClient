@@ -12,7 +12,7 @@ public class ControllerManager : MonoBehaviour
     public Button[] playerSpaces; //Playable space for game
     public int[] usedButton;
 
-    public Text winnerText;//holds text component of winner text
+    public Text winnerText;//holds text component of winner textss
     public GameObject[] winLines;//holds lines of winning display
 
     bool gameDone = false;
@@ -184,7 +184,7 @@ public class ControllerManager : MonoBehaviour
             {
                 Debug.Log("Player " + turnOfPlayer + " won!");
 
-                DisplayWinState(i);
+                DisplayWinState(i, turnOfPlayer);
                 
                 return;
             }
@@ -192,13 +192,13 @@ public class ControllerManager : MonoBehaviour
 
     }
 
-    void DisplayWinState(int index)
+    void DisplayWinState(int index, int turnofPlayer)
     {
         
 
         gameDone = true;
 
-        if (index == 0)
+        if (turnofPlayer == 0)
         {
             winnerText.text = "Player " + index + " Wins!";
 
@@ -206,7 +206,7 @@ public class ControllerManager : MonoBehaviour
 
             player1ScoreText.text = Player1Score.ToString();
         }
-        else if(index == 1)
+        else if(turnofPlayer == 1)
         {
             winnerText.text = "Player " + index + " Wins!";
 

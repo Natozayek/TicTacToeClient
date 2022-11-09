@@ -15,6 +15,7 @@ public class ControllerManager : MonoBehaviour
     public Text winnerText;//holds text component of winner text
     public GameObject[] winLines;//holds lines of winning display
 
+    bool gameDone = false;
 
     public int Player1Score;
     public int Player2Score;
@@ -29,16 +30,17 @@ public class ControllerManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+      
     }
     void Start()
     {
-        gameSetUp();
+        
         
     }
 
-    void gameSetUp()
+    public void gameSetUp()
     {
-        turnofPlayer = 0;
+        turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
         turnCount = 0;
         turnDisplay[0].SetActive(true);
         turnDisplay[1].SetActive(false);
@@ -59,62 +61,62 @@ public class ControllerManager : MonoBehaviour
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
+        if(turnofPlayer == 0)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
     }
     // Update is called once per frame
     void Update()
     {
+        if(gameDone)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            winnerText.gameObject.SetActive(true);
+            resetGameButton.gameObject.SetActive(true);
+        }
         
     }
 
     public void onButtonClicked(int buttonIndex)
     {
+        turnCount++;
         playerSpaces[buttonIndex].image.sprite = playerIcons[turnofPlayer];
         playerSpaces[buttonIndex].interactable = false;
-
         usedButton[buttonIndex] = turnofPlayer + 1;
-        turnCount++;
 
-        if(turnCount > 4)
+        NotifyServer(buttonIndex, turnofPlayer);
+
+        if (turnCount > 4)
         {
-            CheckWinCondition();
+            CheckWinCondition(turnofPlayer);
         }
         //Player X has made a move notify button index pressed and which player made a move before 
-        NotifyServer(buttonIndex, turnofPlayer);
+      
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-        if (turnofPlayer == 0)
-        {
-            
-            turnofPlayer = 1; 
-            turnDisplay[1].SetActive(true); 
-            turnDisplay[0].SetActive(false);
-          
-        }
-        else
-        {
-  
-            turnofPlayer = 0;
-            turnDisplay[0].SetActive(true);
-            turnDisplay[1].SetActive(false);
-          
-        }
 
 
     }
 
     public void reciveButtonClicked(int buttonIndex, int playerTurn)
     {
-     
-        playerSpaces[buttonIndex].image.sprite = playerIcons[turnofPlayer];
+        turnCount++;
+
+        playerSpaces[buttonIndex].image.sprite = playerIcons[playerTurn];
         playerSpaces[buttonIndex].interactable = false;
 
         usedButton[buttonIndex] = playerTurn + 1;
-        turnCount++;
 
         if (turnCount > 4)
         {
-            CheckWinCondition();
+            CheckWinCondition(playerTurn);
         }
+
+
+        
 
         if (playerTurn == 0)
         {
@@ -125,7 +127,7 @@ public class ControllerManager : MonoBehaviour
             turnDisplay[0].SetActive(false);
 
         }
-        else
+        if (playerTurn == 1)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -137,7 +139,7 @@ public class ControllerManager : MonoBehaviour
 
       
     }
-    public void CheckWinCondition() // 8 possibles way to win //3 horizontal lines //3 vertical lines and 2 diagonal lines
+    public void CheckWinCondition(int turnOfPlayer) // 8 possibles way to win //3 horizontal lines //3 vertical lines and 2 diagonal lines
     {
         int possibleHorizontalSol1 = usedButton[0] + usedButton[1] + usedButton[2];
         int possibleHorizontalSol2 = usedButton[3] + usedButton[4] + usedButton[5];
@@ -156,9 +158,9 @@ public class ControllerManager : MonoBehaviour
 
         for(int i = 0; i < solutions.Length; i++)
         {
-            if (solutions[i] == 3*(turnofPlayer+1))
+            if (solutions[i] == 3*(turnOfPlayer + 1))
             {
-                Debug.Log("Player " + turnofPlayer + " won!");
+                Debug.Log("Player " + turnOfPlayer + " won!");
 
                 DisplayWinState(i);
                 
@@ -170,9 +172,11 @@ public class ControllerManager : MonoBehaviour
 
     void DisplayWinState(int index)
     {
-        winnerText.gameObject.SetActive(true);
-        resetGameButton.gameObject.SetActive(true);
-        if (turnofPlayer == 0)
+        
+
+        gameDone = true;
+
+        if (index == 0)
         {
             winnerText.text = "Player X Wins!";
 
@@ -180,7 +184,7 @@ public class ControllerManager : MonoBehaviour
 
             player1ScoreText.text = Player1Score.ToString();
         }
-        else if(turnofPlayer ==1)
+        else if(index == 1)
         {
             winnerText.text = "Player 0 Wins!";
 
@@ -188,31 +192,38 @@ public class ControllerManager : MonoBehaviour
             player2ScoreText.text = Player2Score.ToString();
         }
 
-        
-
-        for (int i = 0; i < playerSpaces.Length; i++)
-        {
-            playerSpaces[i].interactable = false;//disable buttons
+        //for (int i = 0; i < playerSpaces.Length; i++)
+        //{
+        //    playerSpaces[i].interactable = false;//disable buttons
          
-        }
+        //}
         winLines[index].SetActive(true);// set active line at player index
 
-       
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
 
     }
 
     public void ResetGameVariables()
     {
+        gameDone=false;
+        winnerText.gameObject.SetActive(false);
+        resetGameButton.gameObject.SetActive(false);
         gameSetUp();
-
         for (int i = 0; i < winLines.Length; i++)
         {
             winLines[i].SetActive(false);//Disable all lines
         }
         winnerText.text = "";
 
+    }
 
-
+    public void ResetGame()
+    {
+        Debug.Log("Reset Game");
+        string reset = "5," + NetworkedClient.Instance.roomName;
+        NetworkedClient.Instance.SendMessageToHost(reset);
+        Debug.Log("MessageSent to Server");
     }
 
 public void LeaveGame()

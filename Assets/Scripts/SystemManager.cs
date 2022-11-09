@@ -138,14 +138,11 @@ public class SystemManager : MonoBehaviour
         if (NetworkedClient.Instance.message == 7)
         {
 
-            Debug.Log("Exited game room " + NetworkedClient.Instance.stringMessage.ToString());
+            Debug.Log("Exited game room " + NetworkedClient.Instance.roomName.ToString());
             Debug.Log("Begin GAME");
             GameReady();
 
-            if(ControllerManager.Instance.isActiveAndEnabled)
-            ControllerManager.Instance.turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
-            
-        
+            ControllerManager.Instance.gameSetUp();
 
         }
 
@@ -153,6 +150,10 @@ public class SystemManager : MonoBehaviour
         {
             ControllerManager.Instance.reciveButtonClicked(NetworkedClient.Instance.buttonIndex, NetworkedClient.Instance.turnOfPlayer);
             Debug.Log(" Player move received");
+        }
+        if (NetworkedClient.Instance.message == 9)
+        {
+            ControllerManager.Instance.ResetGameVariables();
         }
 
 

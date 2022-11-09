@@ -23,6 +23,8 @@ public class NetworkedClient : MonoBehaviour
     public int message = -1;
     public string stringMessage = "";
 
+    public string roomName = "";
+
     public int buttonIndex;
     public int turnOfPlayer;
 
@@ -168,13 +170,12 @@ public class NetworkedClient : MonoBehaviour
                 break;
 
             case 7:
-                message = 7;//Start Match
-                stringMessage = dataReceived[1].ToString();
+
+                roomName = dataReceived[1].ToString();
                 turnOfPlayer = int.Parse(dataReceived[2]);
-                Debug.Log(stringMessage + "Message");
-
+                Debug.Log(roomName + "Message");
                 Debug.Log(turnOfPlayer + " its your turn ");
-
+                message = 7;//Start Match 
 
                 break;
 
@@ -182,10 +183,20 @@ public class NetworkedClient : MonoBehaviour
                 message = 8;//PlayerXMadeaMove
                 buttonIndex = int.Parse(dataReceived[1]);
                 turnOfPlayer = int.Parse(dataReceived[2]);
-                Debug.Log("Button IndexPressedBy otherPlayer.  -->" + buttonIndex);
-                Debug.Log("Turn of player was -> " + turnOfPlayer);
+                Debug.Log("Button IndexPressedBy otherPlayer.  -->" + buttonIndex.ToString());
+                Debug.Log("Turn of player was -> " + turnOfPlayer.ToString());
+                break;
+
+            case 9:
+
+                roomName = dataReceived[1].ToString();
+                turnOfPlayer = int.Parse(dataReceived[2]);
+                Debug.Log(roomName + "Message");
+                Debug.Log(turnOfPlayer + " its your turn ");
+                message = 9;//Restart Match 
                 break;
         }
+        
 
 
     }

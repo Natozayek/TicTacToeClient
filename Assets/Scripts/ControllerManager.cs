@@ -30,17 +30,23 @@ public class ControllerManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-      
+
     }
     void Start()
     {
-        
-        
+
+
     }
 
     public void gameSetUp()
     {
+        Debug.Log(turnofPlayer + "<= turn of player");
+
         turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
+
+
+        Debug.Log("GAME SETUP");
+        Debug.Log(NetworkedClient.Instance.turnOfPlayer + " <=  NetworkClient turnofPlayer X");
         turnCount = 0;
         turnDisplay[0].SetActive(true);
         turnDisplay[1].SetActive(false);
@@ -66,6 +72,7 @@ public class ControllerManager : MonoBehaviour
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
         }
+      
     }
     // Update is called once per frame
     void Update()
@@ -74,7 +81,7 @@ public class ControllerManager : MonoBehaviour
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
-            winnerText.gameObject.SetActive(true);
+           
             resetGameButton.gameObject.SetActive(true);
         }
         
@@ -82,6 +89,7 @@ public class ControllerManager : MonoBehaviour
 
     public void onButtonClicked(int buttonIndex)
     {
+        Debug.Log("Button Pressed at index =>" + buttonIndex);
         turnCount++;
         playerSpaces[buttonIndex].image.sprite = playerIcons[turnofPlayer];
         playerSpaces[buttonIndex].interactable = false;
@@ -98,7 +106,18 @@ public class ControllerManager : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
+        if (turnofPlayer == 0)
+        {
+            turnDisplay[1].SetActive(true);
+            turnDisplay[0].SetActive(false);
+        }
+        if (turnofPlayer == 1)
+        {
+          
+            turnDisplay[0].SetActive(true);
+            turnDisplay[1].SetActive(false);
 
+        }
     }
 
     public void reciveButtonClicked(int buttonIndex, int playerTurn)
@@ -117,25 +136,28 @@ public class ControllerManager : MonoBehaviour
 
 
         
-
-        if (playerTurn == 0)
+        if(!gameDone)
         {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-            turnofPlayer = 1;
-            turnDisplay[1].SetActive(true);
-            turnDisplay[0].SetActive(false);
+            if (playerTurn == 0)
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+                turnofPlayer = 1;
+                turnDisplay[1].SetActive(true);
+                turnDisplay[0].SetActive(false);
 
-        }
-        if (playerTurn == 1)
-        {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-            turnofPlayer = 0;
-            turnDisplay[0].SetActive(true);
-            turnDisplay[1].SetActive(false);
+            }
+           else if (playerTurn == 1)
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+                turnofPlayer = 0;
+                turnDisplay[0].SetActive(true);
+                turnDisplay[1].SetActive(false);
 
+            }
         }
+        
 
       
     }
@@ -178,7 +200,7 @@ public class ControllerManager : MonoBehaviour
 
         if (index == 0)
         {
-            winnerText.text = "Player X Wins!";
+            winnerText.text = "Player " + index + " Wins!";
 
             Player1Score++;
 
@@ -186,7 +208,7 @@ public class ControllerManager : MonoBehaviour
         }
         else if(index == 1)
         {
-            winnerText.text = "Player 0 Wins!";
+            winnerText.text = "Player " + index + " Wins!";
 
             Player2Score++;
             player2ScoreText.text = Player2Score.ToString();
@@ -207,15 +229,15 @@ public class ControllerManager : MonoBehaviour
     public void ResetGameVariables()
     {
         gameDone=false;
-        winnerText.gameObject.SetActive(false);
         resetGameButton.gameObject.SetActive(false);
         gameSetUp();
         for (int i = 0; i < winLines.Length; i++)
         {
             winLines[i].SetActive(false);//Disable all lines
         }
-        winnerText.text = "";
-
+        winnerText.text = " Playing";
+        player1ScoreText.text = Player1Score.ToString();
+        player2ScoreText.text = Player2Score.ToString();
     }
 
     public void ResetGame()
@@ -235,6 +257,8 @@ public void LeaveGame()
         player1ScoreText .text= "";
         player1ScoreText.text = "";
         player2ScoreText.text = "";
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
 
         SystemManager.Instance.LeaveGame();
         //How to expulse other player from game and gameroom, to lobby?

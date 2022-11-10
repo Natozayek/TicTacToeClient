@@ -204,7 +204,6 @@ public class ControllerManager : MonoBehaviour
     void DisplayWinState(int index, int turnofPlayer)
     {
         
-
         gameDone = true;
 
         if (turnofPlayer == 0)
@@ -260,17 +259,25 @@ public class ControllerManager : MonoBehaviour
 public void LeaveGame()
     {
 
-        ResetGameVariables();
+        turnCount = 0;
+        turnofPlayer = 0;
         Player1Score = 0;
         Player2Score = 0;
         player1ScoreText .text= "";
         player1ScoreText.text = "";
         player2ScoreText.text = "";
+        gameDone = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
+        resetGameButton.gameObject.SetActive(false);
+
+        for (int i = 0; i < winLines.Length; i++)
+        {
+            winLines[i].SetActive(false);//Disable all lines
+        }
+
         SystemManager.Instance.LeaveGame();
-        //How to expulse other player from game and gameroom, to lobby?
 
     }
 
@@ -282,4 +289,14 @@ public void LeaveGame()
         NetworkedClient.Instance.SendMessageToHost(playerMoved);
         Debug.Log("MessageSent to Server");
     }
+
+    public void LeaveGameNotification()
+    {
+
+        string playerLeftRoomX = "6," + NetworkedClient.Instance.roomName;
+        NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
+        Debug.Log("MessageSent to Server");
+
+    }
+
 }

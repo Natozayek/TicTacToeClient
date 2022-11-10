@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -68,8 +69,18 @@ public class SystemManager : MonoBehaviour
             NetworkedClient.Instance.message = -1;
         }
         
-     
-        
+        if(Input.GetKey(KeyCode.K))
+        {
+            inputBoxForNewGameRoom.SetActive(true);
+            loginBox.SetActive(false);
+        }
+        if (Input.GetKey(KeyCode.L))
+        {
+            inputBoxForNewGameRoom.SetActive(false);
+            loginBox.SetActive(true);
+        }
+
+
     }
     //FUNCTION TO HANDLE EVENTS IN GAME
     public void ShowMessage()
@@ -162,6 +173,11 @@ public class SystemManager : MonoBehaviour
             messageInfo.GetComponent<Text>().text = "Username already logged in";
             StartCoroutine(DisableMessage());
         }
+        if (NetworkedClient.Instance.message == 11)
+        {
+            ControllerManager.Instance.LeaveGame();
+            deactivate();
+        }
 
 
         // USER ALREADY LOGGED
@@ -239,24 +255,34 @@ public class SystemManager : MonoBehaviour
     {
         newGameRoom.SetActive(false);
         newGame.SetActive(true);
-       
     }
     public void LeaveGame()
     {
         //After reseting variables in cotroller manager, this function will be called to handle the "scene" transition;
+         GameIsReady = false;
         isThePlayerReady = false;
         newGameRoom.SetActive(false);
         newGame.SetActive(false);
+     
+       
+    
         inputBoxForNewGameRoom.SetActive(true);
 
-        //gameRoomName.text = "";
-        //roomName1.text = ""; 
-        
-        
-        //Notify the server i have left the game
-        //What does the server needs to know and do?
+    
 
     }
+
+    private void deactivate()
+    {
+        if (roomName1.IsActive())
+            roomName1.GetComponent<Text>().text = "";
+        if(gameRoomNameParent.active)
+        {
+            gameRoomNameParent.SetActive(false);
+        }
+    }
+
+
     #endregion
 
 

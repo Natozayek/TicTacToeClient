@@ -105,7 +105,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "10.0.221.226", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "192.168.0.13", socketPort, 0, out error); // server is local on network
            
             Debug.Log(connectionID + "   -> cID.");
            
@@ -200,8 +200,12 @@ public class NetworkedClient : MonoBehaviour
             case 10:
                 message = 10;//Acces Denied
                 Debug.Log(stringMessage);
+                break;
 
 
+            case 11:
+                message = 11;//Acces Denied
+                Debug.Log(stringMessage);
                 break;
         }
         

@@ -3259,7 +3259,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 657644757}
         m_TargetAssemblyTypeName: ControllerManager, Assembly-CSharp
-        m_MethodName: LeaveGame
+        m_MethodName: LeaveGameNotification
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

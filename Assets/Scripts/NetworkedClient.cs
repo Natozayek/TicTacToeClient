@@ -22,7 +22,7 @@ public class NetworkedClient : MonoBehaviour
 
     public int message = -1;
     public string stringMessage = "";
-
+    public string displayMessageInScree = "";
     public string roomName = "";
 
     public int buttonIndex;
@@ -206,6 +206,11 @@ public class NetworkedClient : MonoBehaviour
             case 11:
                 message = 11;//Acces Denied
                 Debug.Log(stringMessage);
+                break;
+
+            case 12:
+                message = 12;//Message Receive - Now Display message in screen
+                displayMessageInScree = dataReceived[1].ToString();
                 break;
         }
         

@@ -24,8 +24,10 @@ public class ControllerManager : MonoBehaviour
     public Text player2ScoreText;
 
     public GameObject resetGameButton;
-
+    public Text messagetoPlayer;
     public static ControllerManager Instance;
+
+    //public Button helloB, compB, rematchB, yesB, noB;
 
     private void Awake()
     {
@@ -40,7 +42,7 @@ public class ControllerManager : MonoBehaviour
 
     public void gameSetUp()
     {
- 
+       
         Debug.Log(turnofPlayer + "<= turn of player");
 
         turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
@@ -86,7 +88,7 @@ public class ControllerManager : MonoBehaviour
            
             resetGameButton.gameObject.SetActive(true);
         }
-
+        
 
         
     }
@@ -281,7 +283,6 @@ public void LeaveGame()
 
     }
 
-
     public void NotifyServer(int buttonIndex, int turnOfPlayerX)
     {
         Debug.Log("PLAYER X MOVED, Pressed button at index " + buttonIndex + " and it was turnofPlayer = " + turnOfPlayerX);
@@ -297,6 +298,41 @@ public void LeaveGame()
         NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
         Debug.Log("MessageSent to Server");
 
+    }
+
+  
+
+   public  void HelloClicked()
+    {
+        string msg = "7," + "Hello!" ;
+        NetworkedClient.Instance.SendMessageToHost(msg);
+    }
+    public void complimentClicked()
+    {
+        string msg = "7," + "Hey! Nice move!";
+        NetworkedClient.Instance.SendMessageToHost(msg);
+    }
+    public void rematchClicked()
+    {
+        string msg = "7," + "Do you want to play again?";
+        NetworkedClient.Instance.SendMessageToHost(msg);
+    }
+    public void noClicked()
+    {
+        string msg = "7," + "NO!";
+        NetworkedClient.Instance.SendMessageToHost(msg);
+    }
+    public void yesClicked()
+    {
+        string msg = "7," + "YES!";
+        NetworkedClient.Instance.SendMessageToHost(msg);
+    }
+    public IEnumerator DisableMessage2()
+    {
+
+        yield return new WaitForSeconds(3.0f);
+        messagetoPlayer.GetComponent<Text>().text = "";
+       
     }
 
 }

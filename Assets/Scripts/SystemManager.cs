@@ -178,10 +178,12 @@ public class SystemManager : MonoBehaviour
             ControllerManager.Instance.LeaveGame();
             deactivate();
         }
+        if (NetworkedClient.Instance.message == 12)
+        {
+            ControllerManager.Instance.messagetoPlayer.text = NetworkedClient.Instance.displayMessageInScree;
+            StartCoroutine(ControllerManager.Instance.DisableMessage2());
+        }
 
-
-        // USER ALREADY LOGGED
-        //possible ifstatement
 
 
     }
@@ -346,6 +348,8 @@ public class SystemManager : MonoBehaviour
             inputBoxForNewGameRoom.gameObject.active = true;
         }
     }
+
+ 
     #endregion
 
 }

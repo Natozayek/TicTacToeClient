@@ -212,6 +212,9 @@ public class NetworkedClient : MonoBehaviour
                 message = 12;//Message Receive - Now Display message in screen
                 displayMessageInScree = dataReceived[1].ToString();
                 break;
+            case 13:
+                ControllerManager.Instance.isSpectator = true;
+                break;
         }
         
 

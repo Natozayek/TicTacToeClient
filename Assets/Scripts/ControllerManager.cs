@@ -12,6 +12,7 @@ public class ControllerManager : MonoBehaviour
     public Button[] playerSpaces; //Playable space for game
     public int[] usedButton;
 
+    
     public Text winnerText;//holds text component of winner textss
     public GameObject[] winLines;//holds lines of winning display
 
@@ -24,8 +25,11 @@ public class ControllerManager : MonoBehaviour
     public Text player2ScoreText;
 
     public GameObject resetGameButton;
+    public GameObject leaveGameButton;
     public Text messagetoPlayer;
     public static ControllerManager Instance;
+
+    public bool isSpectator;
 
     //public Button helloB, compB, rematchB, yesB, noB;
 
@@ -34,11 +38,7 @@ public class ControllerManager : MonoBehaviour
         Instance = this;
 
     }
-    void Start()
-    {
-
-
-    }
+ 
 
     public void gameSetUp()
     {
@@ -65,32 +65,44 @@ public class ControllerManager : MonoBehaviour
             usedButton[i] = -200;
         }
 
-        if(turnofPlayer == 1)
+        if(turnofPlayer == 1 && !isSpectator)
         {
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
-        if(turnofPlayer == 0)
+        if(turnofPlayer == 0 && !isSpectator)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+        }
+
+        {
+            leaveGameButton.gameObject.SetActive(true);
         }
       
     }
     // Update is called once per frame
     void Update()
     {
-        
-        if(gameDone)
+
+        if (gameDone && !isSpectator)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
-           
+
             resetGameButton.gameObject.SetActive(true);
         }
-        
+        if (isSpectator)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
 
-        
+
+            for (int i = 0; i < playerSpaces.Length; i++)
+            {
+                playerSpaces[i].interactable = false;// make all the buttons interactables
+            }
+        }
     }
 
     public void onButtonClicked(int buttonIndex)
@@ -273,6 +285,7 @@ public void LeaveGame()
         Cursor.lockState = CursorLockMode.None;
 
         resetGameButton.gameObject.SetActive(false);
+        leaveGameButton.gameObject.SetActive(false);
 
         for (int i = 0; i < winLines.Length; i++)
         {
@@ -293,11 +306,17 @@ public void LeaveGame()
 
     public void LeaveGameNotification()
     {
+        if(!isSpectator)
+        {
+            string playerLeftRoomX = "6," + NetworkedClient.Instance.roomName;
+            NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
+            Debug.Log("MessageSent to Server");
 
-        string playerLeftRoomX = "6," + NetworkedClient.Instance.roomName;
-        NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
-        Debug.Log("MessageSent to Server");
-
+        }
+        else
+        {
+            LeaveGame();
+        }
     }
 
   

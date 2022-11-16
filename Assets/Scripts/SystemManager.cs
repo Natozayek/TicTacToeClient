@@ -127,8 +127,8 @@ public class SystemManager : MonoBehaviour
         if (NetworkedClient.Instance.message == 5) 
         {
             newGameRoom.gameObject.SetActive(true);
-            gameRoomNameParent.gameObject.SetActive(true);
-            roomName1.gameObject.SetActive(true);
+            //gameRoomNameParent.gameObject.SetActive(true);
+           // roomName1.gameObject.SetActive(true);
 
             string data = NetworkedClient.Instance.stringMessage.ToString();
             jointoRoom(data);
@@ -137,13 +137,18 @@ public class SystemManager : MonoBehaviour
         if (NetworkedClient.Instance.message == 6)
         {
             newGameRoom.gameObject.SetActive(true);
-            gameRoomNameParent.gameObject.SetActive(true);
-            roomName1.gameObject.SetActive(true);
+          //  gameRoomNameParent.gameObject.SetActive(true);
+            //roomName1.gameObject.SetActive(true);
 
             inputBoxForNewGameRoom.SetActive(false);
             string data = NetworkedClient.Instance.stringMessage.ToString();
             GameIsReady = true;
             jointoRoom(data);
+            if(ControllerManager.Instance.isSpectator)
+            {
+                GameReady();
+                ControllerManager.Instance.gameSetUp();
+            }
             
         }
         if (NetworkedClient.Instance.message == 7)
@@ -238,7 +243,7 @@ public class SystemManager : MonoBehaviour
         inputBoxForNewGameRoom.SetActive(false);
         Debug.Log("Room: " + roomName + " joined");
 
-        if(GameIsReady)
+        if(GameIsReady && !ControllerManager.Instance.isSpectator)
         {
             Debug.Log("Notify server... GAME READY");
             string startGame = "3," + GetGameRoomName().ToString();
@@ -276,12 +281,7 @@ public class SystemManager : MonoBehaviour
 
     private void deactivate()
     {
-        if (roomName1.IsActive())
             roomName1.GetComponent<Text>().text = "";
-        if(gameRoomNameParent.active)
-        {
-            gameRoomNameParent.SetActive(false);
-        }
     }
 
 

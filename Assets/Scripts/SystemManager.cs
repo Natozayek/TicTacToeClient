@@ -270,9 +270,6 @@ public class SystemManager : MonoBehaviour
         isThePlayerReady = false;
         newGameRoom.SetActive(false);
         newGame.SetActive(false);
-     
-       
-    
         inputBoxForNewGameRoom.SetActive(true);
 
     

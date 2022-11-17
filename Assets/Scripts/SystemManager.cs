@@ -15,6 +15,10 @@ public class SystemManager : MonoBehaviour
     [SerializeField] GameObject createNewAccButton;
     [SerializeField] GameObject joinGameRoom;
     [SerializeField] GameObject leaveGameRoom;
+    //[SerializeField] GameObject logOutButton;
+    //[SerializeField] GameObject spectateButton;
+    //[SerializeField] GameObject replayButton;
+
 
 
     //Input fields
@@ -235,6 +239,14 @@ public class SystemManager : MonoBehaviour
 
     }
 
+    public void SpectateGameRoom()
+    {
+        Debug.Log("Spectating ROOM EVENTS ->> name: " + GetGameRoomName());
+        string gameroomCreation = "9," + GetUsername() + "," + GetGameRoomName().ToString();
+        NetworkedClient.Instance.SendMessageToHost(gameroomCreation);
+        Debug.Log("MessageSent to Server");
+
+    }
     public void jointoRoom(string roomName)
     {
         Debug.Log("JOINING TO ROOM --->   " + roomName );
@@ -273,6 +285,34 @@ public class SystemManager : MonoBehaviour
         inputBoxForNewGameRoom.SetActive(true);
 
     
+
+    }
+
+    public void WatchReplay()
+    {
+
+    }
+    public void LogOut()
+    {
+        string playerLogOut = "11,";
+        NetworkedClient.Instance.SendMessageToHost(playerLogOut);
+        Debug.Log("MessageSent to Server");
+
+        inputBoxForNewGameRoom.SetActive(false);
+        loginBox.SetActive(true);
+        messageInfo.SetActive(true);
+    }
+
+    private void OnApplicationQuit()
+    {
+        Debug.Log("Exiting application");
+        string playerLogOut = "11,";
+        NetworkedClient.Instance.SendMessageToHost(playerLogOut);
+
+        string playerLeftRoomX = "6," + NetworkedClient.Instance.roomName;
+        NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
+        Debug.Log("MessageSent to Server");
+
 
     }
 

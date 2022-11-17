@@ -33,6 +33,7 @@ public class ControllerManager : MonoBehaviour
     public static ControllerManager Instance;
 
     public bool isSpectator;
+    public bool isInGameRoom;
 
     //public Button helloB, compB, rematchB, yesB, noB;
 
@@ -45,9 +46,12 @@ public class ControllerManager : MonoBehaviour
 
     public void gameSetUp()
     {
-       
-        Debug.Log(turnofPlayer + "<= turn of player");
-
+       if(!isSpectator)
+        {
+            isInGameRoom = true;
+        }
+        
+        
         turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
 
 
@@ -238,11 +242,11 @@ public class ControllerManager : MonoBehaviour
             player2ScoreText.text = Player2Score.ToString();
         }
 
-        //for (int i = 0; i < playerSpaces.Length; i++)
-        //{
-        //    playerSpaces[i].interactable = false;//disable buttons
-         
-        //}
+        for (int i = 0; i < playerSpaces.Length; i++)
+        {
+            playerSpaces[i].interactable = false;//disable buttons
+
+        }
         winLines[index].SetActive(true);// set active line at player index
 
         Cursor.visible = true;
@@ -286,6 +290,8 @@ public void LeaveGame()
         player1ScoreText.text = "";
         player2ScoreText.text = "";
         theGameIsDone = false;
+        isInGameRoom = false;
+        isSpectator = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
@@ -318,6 +324,7 @@ public void LeaveGame()
             string playerLeftRoomX = "6," + NetworkedClient.Instance.roomName;
             NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
             Debug.Log("MessageSent to Server");
+            
 
         }
         else
@@ -374,5 +381,7 @@ public void LeaveGame()
         messagetoPlayer.GetComponent<Text>().text = "";
        
     }
+
+
 
 }

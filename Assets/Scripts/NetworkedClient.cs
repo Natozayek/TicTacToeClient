@@ -229,15 +229,10 @@ public class NetworkedClient : MonoBehaviour
 
                 for (int i = 2; i < dataReceived.Length; i++)
                 {
-                  
-            
-                        playerdata = playerdata + dataReceived[i].ToString();
-                    
-                
+                        playerdata = playerdata + dataReceived[i].ToString();    
                 }
                 
                 Debug.Log("Recived data for replay");
-                
                 Debug.Log(playerdata);
                 message = 16;
 

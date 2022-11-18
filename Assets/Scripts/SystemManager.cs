@@ -54,7 +54,7 @@ public class SystemManager : MonoBehaviour
 
     public float timer;
     protected int connectionID;
-
+    string roomNameString;
    
     public int ConnectionID { get { return connectionID; } set { connectionID = value; } }
 
@@ -149,9 +149,6 @@ public class SystemManager : MonoBehaviour
         if (NetworkedClient.Instance.message == 6)
         {
             newGameRoom.gameObject.SetActive(true);
-          //  gameRoomNameParent.gameObject.SetActive(true);
-            //roomName1.gameObject.SetActive(true);
-
             inputBoxForNewGameRoom.SetActive(false);
             string data = NetworkedClient.Instance.stringMessage.ToString();
             GameIsReady = true;
@@ -237,10 +234,7 @@ public class SystemManager : MonoBehaviour
             isDataAlreadyRecived = true;
         }
 
-
-
-
-        }
+     }
 
 
     #region FUNCTIONS TO LET KNOW SERVER ABOUT NEW ACCOUNT CREATION /LOGGING VERIFICATION/ && EVENTS IN LOGING BOX SCENE
@@ -273,8 +267,7 @@ public class SystemManager : MonoBehaviour
 
     #endregion
 
-
-    #region FUNCTIONS TO LET KNOW SERVER ABOUT GAMEROOM CREATION OR JOIN/ PREPARE GAME/ LEAVE GAME/ LEAVE GAME ROOM
+    #region FUNCTIONS TO LET KNOW SERVER ABOUT GAMEROOM CREATION OR JOIN/ PREPARE GAME/ LEAVE GAME/ LEAVE GAME ROOM/REPLAY GAMES/
 
     public void itemSelected(Dropdown dropdown)
     {
@@ -289,14 +282,12 @@ public class SystemManager : MonoBehaviour
         Debug.Log("MessageSent to Server");
 
     }
-
     public void SpectateGameRoom()
     {
         Debug.Log("Spectating ROOM EVENTS ->> name: " + GetGameRoomName());
         string gameroomCreation = "9," + GetUsername() + "," + GetGameRoomName().ToString();
         NetworkedClient.Instance.SendMessageToHost(gameroomCreation);
         Debug.Log("MessageSent to Server");
-
     }
     public void jointoRoom(string roomName)
     {
@@ -305,7 +296,7 @@ public class SystemManager : MonoBehaviour
         roomName1.GetComponent<Text>().text = roomName;
         inputBoxForNewGameRoom.SetActive(false);
         Debug.Log("Room: " + roomName + " joined");
-
+        roomNameString = roomName;
         if(GameIsReady && !ControllerManager.Instance.isSpectator)
         {
             Debug.Log("Notify server... GAME READY");
@@ -313,13 +304,15 @@ public class SystemManager : MonoBehaviour
             NetworkedClient.Instance.SendMessageToHost(startGame);
         }
     }
-
     public void LeaveGameRoomLobby()
     {
-
         inputBoxForNewGameRoom.SetActive(true);
         newGameRoom.SetActive(false);
-       
+        roomName1.GetComponent<Text>().text = "";
+       string playerLeftRoomX = "6," + roomNameString;
+        NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
+        Debug.Log("MessageSent to Server");
+        roomNameString = "";
     }    
     public void GameReady()
     {
@@ -334,11 +327,7 @@ public class SystemManager : MonoBehaviour
         newGameRoom.SetActive(false);
         newGame.SetActive(false);
         inputBoxForNewGameRoom.SetActive(true);
-
-    
-
     }
-
     public void WatchReplay()
     {
         dropdown.gameObject.SetActive(true);
@@ -375,9 +364,7 @@ public class SystemManager : MonoBehaviour
         string playerLogOut = "11,";
         NetworkedClient.Instance.SendMessageToHost(playerLogOut);
 
-        string playerLeftRoomX = "6," + NetworkedClient.Instance.roomName;
-        NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
-        Debug.Log("MessageSent to Server");
+     
 
 
     }

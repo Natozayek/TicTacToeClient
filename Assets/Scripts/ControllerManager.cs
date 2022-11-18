@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,8 @@ using UnityEngine.UI;
 
 public class ControllerManager : MonoBehaviour
 {
+    int buttonindexReplay;
+    int turnOfReplay = 0;
     public int turnofPlayer; // 0 = X player  & 1 = O Player
     public int turnCount;
     public GameObject[] turnDisplay;//shows whos turn it is
@@ -34,6 +37,7 @@ public class ControllerManager : MonoBehaviour
 
     public bool isSpectator;
     public bool isInGameRoom;
+    public bool isReplayMode;
 
     //public Button helloB, compB, rematchB, yesB, noB;
 
@@ -46,13 +50,14 @@ public class ControllerManager : MonoBehaviour
 
     public void gameSetUp()
     {
-       if(!isSpectator)
+       if(!isSpectator && !isReplayMode)
         {
             isInGameRoom = true;
+            turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
         }
         
         
-        turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
+
 
 
         Debug.Log("GAME SETUP");
@@ -85,13 +90,104 @@ public class ControllerManager : MonoBehaviour
         {
             leaveGameButton.gameObject.SetActive(true);
         }
+
+      
+
+        if (isReplayMode)
+        {
+            for (int i = 0; i < playerSpaces.Length; i++)
+            {
+                playerSpaces[i].interactable = false;// make all the buttons interactables
+                playerSpaces[i].GetComponent<Image>().sprite = null;
+            }
+            StartCoroutine(ReplayMoves());
+        }
+    }
+
+    public  IEnumerator ReplayMoves()
+    {
+
+
+        for (int i = 0; i < NetworkedClient.Instance.playerdata.Length; i++)
+        {
+        
+            yield return new WaitForSeconds(1.5f);
+
+            buttonindexReplay = int.Parse(NetworkedClient.Instance.playerdata[i].ToString());
+            onButtonClickedForReplay(buttonindexReplay, turnOfReplay);
+
+            if (turnOfReplay == 0)
+            {
+
+                turnOfReplay = 1;
+
+                turnDisplay[1].SetActive(true);
+                turnDisplay[0].SetActive(false);
+            }
+            else if (turnOfReplay == 1)
+            {
+                turnOfReplay = 0;
+
+                turnDisplay[0].SetActive(true);
+                turnDisplay[1].SetActive(false);
+
+            }
+        }
+        yield return new WaitForSeconds(3.0f);
+
+        LeaveGame();
       
     }
+
+  
+        public  void ReplayMoves2()
+    {
+        int buttonindex;
+        int turnOfReplay = 0;
+        float timer = 0;
+
+        for (int i = 0; i < NetworkedClient.Instance.playerdata.Length; i++)
+        {
+
+            timer = timer + Time.deltaTime;
+            if(timer > 1.5f)
+            {
+                buttonindex = int.Parse(NetworkedClient.Instance.playerdata[i].ToString());
+                onButtonClickedForReplay(buttonindex, turnOfReplay);
+
+                if (turnOfReplay == 0)
+                {
+
+                    turnOfReplay = 1;
+
+                    turnDisplay[1].SetActive(true);
+                    turnDisplay[0].SetActive(false);
+                }
+                if (turnOfReplay == 1)
+                {
+                    turnOfReplay = 0;
+
+                    turnDisplay[0].SetActive(true);
+                    turnDisplay[1].SetActive(false);
+
+                }
+
+                timer = 0;
+            }
+          
+        }
+
+       
+        LeaveGame();
+      
+    }
+
+
     // Update is called once per frame
     void Update()
     {
 
-        if (theGameIsDone && !isSpectator)
+        if (theGameIsDone && (!isSpectator && !isReplayMode))
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -148,6 +244,29 @@ public class ControllerManager : MonoBehaviour
             turnDisplay[1].SetActive(false);
 
         }
+    }
+    public void onButtonClickedForReplay(int buttonIndex, int turnofReplay)
+    {
+        Debug.Log("Button Pressed at index =>" + buttonIndex  + " by turn of player ==>" + turnofReplay);
+        turnCount++;
+     
+        playerSpaces[buttonIndex].image.sprite = playerIcons[turnofReplay];
+        playerSpaces[buttonIndex].interactable = false;
+        usedButton[buttonIndex] = turnofReplay + 1;
+
+        if (turnCount > 4)
+        {
+            CheckWinCondition(turnofReplay);
+        }
+
+        if (turnCount >= 9)
+        {
+            theGameIsDone = true;
+        }
+
+
+
+
     }
     public void reciveButtonClicked(int buttonIndex, int playerTurn)
     {
@@ -241,12 +360,16 @@ public class ControllerManager : MonoBehaviour
             Player2Score++;
             player2ScoreText.text = Player2Score.ToString();
         }
-
-        for (int i = 0; i < playerSpaces.Length; i++)
+        if(!isReplayMode)
         {
-            playerSpaces[i].interactable = false;//disable buttons
 
+            for (int i = 0; i < playerSpaces.Length; i++)
+            {
+                playerSpaces[i].interactable = false;//disable buttons
+
+            }
         }
+       
         winLines[index].SetActive(true);// set active line at player index
 
         Cursor.visible = true;
@@ -281,7 +404,7 @@ public class ControllerManager : MonoBehaviour
 
 public void LeaveGame()
     {
-
+        turnOfReplay = 0;
         turnCount = 0;
         turnofPlayer = 0;
         Player1Score = 0;
@@ -292,6 +415,7 @@ public void LeaveGame()
         theGameIsDone = false;
         isInGameRoom = false;
         isSpectator = false;
+        isReplayMode = false;
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
 
@@ -306,6 +430,8 @@ public void LeaveGame()
         }
 
         SystemManager.Instance.LeaveGame();
+        NetworkedClient.Instance.playerdata = "";
+        Debug.Log(NetworkedClient.Instance.playerdata);
 
     }
 

@@ -24,6 +24,7 @@ public class NetworkedClient : MonoBehaviour
     public string stringMessage = "";
     public string displayMessageInScree = "";
     public string roomName = "";
+    public string playerdata = "";
 
     public int buttonIndex;
     public int turnOfPlayer;
@@ -223,6 +224,30 @@ public class NetworkedClient : MonoBehaviour
                 clipName.Add(dataReceived[1].ToString());
                 message = 15;
                 break;
+
+            case 16:
+
+                for (int i = 2; i < dataReceived.Length; i++)
+                {
+                  
+            
+                        playerdata = playerdata + dataReceived[i].ToString();
+                    
+                
+                }
+                
+                Debug.Log("Recived data for replay");
+                
+                Debug.Log(playerdata);
+                message = 16;
+
+                break;
+
+            case 17:
+                message = 17;
+                break;
+                
+
         }
         
 

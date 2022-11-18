@@ -49,6 +49,7 @@ public class SystemManager : MonoBehaviour
     private bool accesGranted;
     private bool isThePlayerReady;
     private bool GameIsReady;
+    private bool isDataAlreadyRecived;
 
 
     public float timer;
@@ -201,30 +202,45 @@ public class SystemManager : MonoBehaviour
         }
         if (NetworkedClient.Instance.message == 15)
         {
-
-           // dropdown.transform.GetComponent<Dropdown>().options.Clear();
-
-            foreach (var item in NetworkedClient.Instance.clipName)
+           if(!isDataAlreadyRecived)
             {
-                dropdown.transform.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = item });
-            }
-            NetworkedClient.Instance.clipName.Clear();
 
-            dropdown.transform.GetComponent<Dropdown>().onValueChanged.AddListener(
-                   delegate
-                   {
-                       var drop = dropdown.transform.GetComponent<Dropdown>();
-                       itemSelected(drop);
-                   });
+                foreach (var item in NetworkedClient.Instance.clipName)
+                {
+                    dropdown.transform.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = item });
+                }
+
+                NetworkedClient.Instance.clipName.Clear();
+
+                dropdown.transform.GetComponent<Dropdown>().onValueChanged.AddListener(
+                       delegate
+                       {
+                           var drop = dropdown.transform.GetComponent<Dropdown>();
+                           itemSelected(drop);
+                       });
+            }
+          
+           
+
+        }
+        if (NetworkedClient.Instance.message == 16)
+        {
+            playButton.gameObject.SetActive(false);
+            dropdown.gameObject.SetActive(false);
+            inputBoxForNewGameRoom.SetActive(false);
+            newGame.gameObject.SetActive(true);
+            ControllerManager.Instance.isReplayMode = true;
+            ControllerManager.Instance.gameSetUp();
+        }
+        if (NetworkedClient.Instance.message == 17)
+        {
+            isDataAlreadyRecived = true;
+        }
+
+
 
 
         }
-        
-
-        
-
-
-    }
 
 
     #region FUNCTIONS TO LET KNOW SERVER ABOUT NEW ACCOUNT CREATION /LOGGING VERIFICATION/ && EVENTS IN LOGING BOX SCENE

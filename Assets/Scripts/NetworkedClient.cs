@@ -27,6 +27,7 @@ public class NetworkedClient : MonoBehaviour
 
     public int buttonIndex;
     public int turnOfPlayer;
+    public List<string> clipName = new List<string>();
 
     // Start is called before the first frame update
 
@@ -105,7 +106,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "192.168.0.13", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "192.168.0.19", socketPort, 0, out error); // server is local on network
            
             Debug.Log(connectionID + "   -> cID.");
            
@@ -214,6 +215,13 @@ public class NetworkedClient : MonoBehaviour
                 break;
             case 13:
                 ControllerManager.Instance.isSpectator = true;
+                break;
+
+            case 15:
+               
+                Debug.Log("HERE");
+                clipName.Add(dataReceived[1].ToString());
+                message = 15;
                 break;
         }
         

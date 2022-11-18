@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using UnityEngine.UIElements;
 
 public class SystemManager : MonoBehaviour
 {
@@ -15,6 +15,7 @@ public class SystemManager : MonoBehaviour
     [SerializeField] GameObject createNewAccButton;
     [SerializeField] GameObject joinGameRoom;
     [SerializeField] GameObject leaveGameRoom;
+    
     //[SerializeField] GameObject logOutButton;
     //[SerializeField] GameObject spectateButton;
     //[SerializeField] GameObject replayButton;
@@ -38,6 +39,12 @@ public class SystemManager : MonoBehaviour
 
     //message
     public GameObject messageInfo, messageAGranted, messageADenied, messageWrongUsername, messageUsernameAlreadyExist1, messageAccountHasBeenCreated, loginBox, inputBoxForNewGameRoom, newGameRoom, newGame;
+
+    [SerializeField] public GameObject playButton;
+    [SerializeField]public GameObject dropdown;
+    public Text labeText;
+    //public Text TextBox;
+
 
     private bool accesGranted;
     private bool isThePlayerReady;
@@ -192,7 +199,29 @@ public class SystemManager : MonoBehaviour
             ControllerManager.Instance.messagetoPlayer.text = NetworkedClient.Instance.displayMessageInScree;
             StartCoroutine(ControllerManager.Instance.DisableMessage2());
         }
+        if (NetworkedClient.Instance.message == 15)
+        {
 
+           // dropdown.transform.GetComponent<Dropdown>().options.Clear();
+
+            foreach (var item in NetworkedClient.Instance.clipName)
+            {
+                dropdown.transform.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = item });
+            }
+            NetworkedClient.Instance.clipName.Clear();
+
+            dropdown.transform.GetComponent<Dropdown>().onValueChanged.AddListener(
+                   delegate
+                   {
+                       var drop = dropdown.transform.GetComponent<Dropdown>();
+                       itemSelected(drop);
+                   });
+
+
+        }
+        
+
+        
 
 
     }
@@ -230,6 +259,12 @@ public class SystemManager : MonoBehaviour
 
 
     #region FUNCTIONS TO LET KNOW SERVER ABOUT GAMEROOM CREATION OR JOIN/ PREPARE GAME/ LEAVE GAME/ LEAVE GAME ROOM
+
+    public void itemSelected(Dropdown dropdown)
+    {
+        int index = dropdown.value;
+        labeText.text = dropdown.options[index].text;
+}
     public void CreateORJoinGameRoom()
     {
         Debug.Log("CREATING OR JOINING ROOM EVENTS ->> name: " +GetGameRoomName());
@@ -290,8 +325,23 @@ public class SystemManager : MonoBehaviour
 
     public void WatchReplay()
     {
-
+        dropdown.gameObject.SetActive(true);
+        playButton.gameObject.SetActive(true);
+        string dropdown2 = "12,";
+        NetworkedClient.Instance.SendMessageToHost(dropdown2);
+        Debug.Log("MessageSent to Server");
     }
+
+    public void PlayReplay()
+    {
+        Debug.Log(labeText.text.ToString());
+        string replayName = labeText.text;
+
+        string dropdown2 = "13," + replayName;
+        NetworkedClient.Instance.SendMessageToHost(dropdown2);
+        Debug.Log("MessageSent to Server");
+    }
+
     public void LogOut()
     {
         string playerLogOut = "11,";

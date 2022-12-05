@@ -438,7 +438,6 @@ MonoBehaviour:
   newUsername: {fileID: 1161782781}
   newPassword: {fileID: 2040713918}
   gameRoomName: {fileID: 962708110}
-  gameRoomNameParent: {fileID: 597080039}
   roomName1: {fileID: 142038394}
   newUser: {fileID: 171754116}
   messageInfo: {fileID: 1469961399}
@@ -454,7 +453,6 @@ MonoBehaviour:
   playButton: {fileID: 1445156887}
   dropdown: {fileID: 587028524}
   labeText: {fileID: 2016751056}
-  timer: 0
 --- !u!4 &22614998
 Transform:
   m_ObjectHideFlags: 0
@@ -641,8 +639,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ed4f98c35751184b896a626df5b5482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  message: -1
-  stringMessage: 
+  messageFromServer: -1
+  s_RoomName: 
   displayMessageInScree: 
   roomName: 
   playerdata: 
@@ -6441,7 +6439,6 @@ MonoBehaviour:
   newUsername: {fileID: 1161782781}
   newPassword: {fileID: 2040713918}
   gameRoomName: {fileID: 0}
-  gameRoomNameParent: {fileID: 0}
   roomName1: {fileID: 0}
   newUser: {fileID: 171754116}
   messageInfo: {fileID: 1469961399}
@@ -6457,7 +6454,6 @@ MonoBehaviour:
   playButton: {fileID: 0}
   dropdown: {fileID: 0}
   labeText: {fileID: 0}
-  timer: 0
 --- !u!1 &1066575430
 GameObject:
   m_ObjectHideFlags: 0

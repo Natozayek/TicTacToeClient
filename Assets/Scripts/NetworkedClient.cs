@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -20,8 +21,10 @@ public class NetworkedClient : MonoBehaviour
     bool stablishedNetwork;
     int ourClientID;
 
-    public int message = -1;
-    public string stringMessage = "";
+
+
+    public int messageFromServer = -1;
+    public string s_RoomName = "";
     public string displayMessageInScree = "";
     public string roomName = "";
     public string playerdata = "";
@@ -44,15 +47,9 @@ public class NetworkedClient : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-
         if (isConnected)
         {
 
-            if(Input.GetKey(KeyCode.S))
-            {
-               // SendMessageToHost();
-            }
             UpdateNetworkConnection();
         }
        
@@ -99,7 +96,6 @@ public class NetworkedClient : MonoBehaviour
             Debug.Log("Attempting to create connection");
 
             NetworkTransport.Init();
-
             ConnectionConfig config = new ConnectionConfig();
             reliableChannelID = config.AddChannel(QosType.Reliable);
             unreliableChannelID = config.AddChannel(QosType.Unreliable);
@@ -108,10 +104,7 @@ public class NetworkedClient : MonoBehaviour
             Debug.Log("Socket open.  Host ID = " + hostID);
 
             connectionID = NetworkTransport.Connect(hostID, "192.168.0.19", socketPort, 0, out error); // server is local on network
-           
             Debug.Log(connectionID + "   -> cID.");
-           
-            //DataManager.AddConnectionID(connectionID);
 
             if (error == 0)
             {
@@ -141,51 +134,53 @@ public class NetworkedClient : MonoBehaviour
         string[] dataReceived = msg.Split(',');
         switch (int.Parse(dataReceived[0]))
         {
-            case 0://Acess granted
-                message = 0;
+            case 0:
+                messageFromServer = 0;
+                
                 break;
             case 1:
-                message = 1;// ERROR-  Account name already exist
+                messageFromServer = 1;// ERROR -  Account name already exist
+                
                 break;
 
             case 2:
-                message = 2;   //ERROR Loging Verification - Wrong username 
+                messageFromServer = 2;   //ERROR - Logging Verification - Wrong username 
+                
                 break;
             case 3:
-                message = 3; //ERROR Loging Verification - Wrong Password
+                messageFromServer = 3; //ERROR - Logging Verification - WrongPassword
+ 
                 break;
             case 4:
-                message = 4; //Account created successfully 
-                Debug.Log(dataReceived[1]);
+                messageFromServer = 4; //Account Created Successfully 
+      
                 break;
             case 5:
-
-                message = 5;
-                stringMessage = dataReceived[1].ToString();
-                Debug.Log(stringMessage + "Message");
+                messageFromServer = 5;//Room Created
+          
+                s_RoomName = dataReceived[1].ToString();
+                Debug.Log(s_RoomName + "Message");
                 break;
             case 6:
-                message = 6;//Join game room
-                stringMessage = dataReceived[1].ToString();
-                Debug.Log(stringMessage + "Message");
-        
+                messageFromServer = 6;//Join Game Room
+       
+                s_RoomName = dataReceived[1].ToString();
+                Debug.Log(s_RoomName + "Message");
                 break;
-
             case 7:
-
                 roomName = dataReceived[1].ToString();
                 turnOfPlayer = int.Parse(dataReceived[2]);
-                Debug.Log(roomName + "Message");
-                Debug.Log(turnOfPlayer + " its your turn ");
-                message = 7;//Start Match 
+                messageFromServer = 7;//Start Match 
+        
 
                 break;
 
             case 8:
-                message = 8;//PlayerXMadeaMove
+                messageFromServer = 8;//Player X Made a Move
+
                 buttonIndex = int.Parse(dataReceived[1]);
                 turnOfPlayer = int.Parse(dataReceived[2]);
-                Debug.Log("Button IndexPressedBy otherPlayer.  -->" + buttonIndex.ToString());
+                Debug.Log("Button IndexPressed By otherPlayer.  -->" + buttonIndex.ToString());
                 Debug.Log("Turn of player was -> " + turnOfPlayer.ToString());
                 break;
 
@@ -195,72 +190,90 @@ public class NetworkedClient : MonoBehaviour
                 turnOfPlayer = int.Parse(dataReceived[2]);
                 Debug.Log(roomName + "Message");
                 Debug.Log(turnOfPlayer + " its your turn ");
-                message = 9;//Restart Match 
+                messageFromServer = 9;//Restart Match 
+       
                 break;
 
 
             case 10:
-                message = 10;//Acces Denied
-                Debug.Log(stringMessage);
+                messageFromServer = 10;//Access Denied - UserAlreadyLogged
                 break;
-
-
             case 11:
-                message = 11;//Acces Denied
-                Debug.Log(stringMessage);
+                messageFromServer = 11;//Leave Game Room;
                 break;
 
             case 12:
-                message = 12;//Message Receive - Now Display message in screen
+                messageFromServer = 12;//Message Receive - Now Display messageFromServer in screen
                 displayMessageInScree = dataReceived[1].ToString();
                 break;
-            case 13:
+            case 13://Spectator mode ON
                 ControllerManager.Instance.isSpectator = true;
                 break;
-
-            case 15:
-               
-                Debug.Log("HERE");
+            case 15://Get replay data
                 clipName.Add(dataReceived[1].ToString());
-                message = 15;
+                messageFromServer = 15;
                 break;
 
-            case 16:
-
+            case 16://DataRecived for replay
                 for (int i = 2; i < dataReceived.Length; i++)
                 {
                         playerdata = playerdata + dataReceived[i].ToString();    
                 }
-                
-                Debug.Log("Recived data for replay");
-                Debug.Log(playerdata);
-                message = 16;
-
+                messageFromServer = 16;
                 break;
-
-            case 17:
-                message = 17;
+            case 17://DataConfirmation
+                messageFromServer = 17;
                 break;
-                
-
         }
         
 
 
     }
-
-    public bool IsConnected()
-    {
-        return isConnected;
-    }
-
-    public int  GetConnectionID()
-    {
-        return connectionID;
-    }
-
     static public void SetSystemManager(GameObject SystemManager)
     {
         sManager = SystemManager;
     }
+}
+
+static public class ClientToServerSignifiers
+{
+    static public int AccessVerification = 0;
+    static public int CreateNewAccount = 1;
+    static public int CreateORJoinGameRoom = 2;
+    static public int GameisReady = 3;
+    static public int playerMoved = 4;
+    static public int RestartMatch = 5;
+    static public int LeaveGameNotification = 6;
+    static public int SendMessageToOtherPlayer = 7;
+    static public int SaveReplayData = 8;
+    static public int SpectateRoom = 9;
+    static public int LogOut = 11;
+    static public int WatchReplay = 12;
+    static public int PlayReplay = 13;
+
+    static public int LeaveGameRoomLobby = 14;
+}                                                   
+
+static public class ServerToClientSignifiers
+{
+
+    static public int AcessGranted = 0;
+    static public int AccountNameAlreadyExist = 1;
+    static public int WrongUsername  = 2;
+    static public int WrongPassword = 3;
+    static public int AccountCreatedSuccessfully = 4;
+    static public int RoomCreated = 5;
+    static public int JoinRoomX = 6;
+    static public int StartMatch = 7;
+    static public int PlayerXMadeAMove = 8;
+    static public int RestartMatch = 9;
+    static public int UserAlreadyLogged = 10;
+    static public int LeaveGameRoom = 11;
+    static public int DisplayMessageInScreen = 12;
+    static public int GetReplayData =15;
+    static public int ReplayModeOn = 16;
+    static public int DataConfirmation = 17;
+    static public int LeaveGameRoomLobby = 14;
+
+
 }

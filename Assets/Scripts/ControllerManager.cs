@@ -43,7 +43,6 @@ public class ControllerManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-
     }
  
     public void gameSetUp()
@@ -56,9 +55,18 @@ public class ControllerManager : MonoBehaviour
 
         Debug.Log("GAME SETUP");
         Debug.Log(NetworkedClient.Instance.turnOfPlayer.ToString() + " <=  NetworkClient turnofPlayer X");
-        turnCount = 0;
-        turnDisplay[0].SetActive(true);
-        turnDisplay[1].SetActive(false);
+        turnCount = NetworkedClient.Instance.turnOfPlayer;
+        if (turnCount == 0)
+        {
+            turnDisplay[0].SetActive(true);
+            turnDisplay[1].SetActive(false);
+        }
+        else
+        {
+            turnDisplay[1].SetActive(true);
+            turnDisplay[0].SetActive(false);
+        }
+     
 
         for (int i = 0; i < playerSpaces.Length; i++)
         {
@@ -331,7 +339,7 @@ public class ControllerManager : MonoBehaviour
         resetGameButton.gameObject.SetActive(false);
         saveReplayButton.gameObject.SetActive(false);
         replayName.gameObject.SetActive(false);
-        gameSetUp();
+  
         for (int i = 0; i < winLines.Length; i++)
         {
             winLines[i].SetActive(false);//Disable all lines
@@ -339,12 +347,14 @@ public class ControllerManager : MonoBehaviour
         winnerText.text = " Playing";
         player1ScoreText.text = Player1Score.ToString();
         player2ScoreText.text = Player2Score.ToString();
+
+        gameSetUp();
     }
 
     public void ResetGame()
     {
         Debug.Log("Reset Game");
-        string reset = "5," + NetworkedClient.Instance.roomName;
+        string reset = ClientToServerSignifiers.RestartMatch + "," + NetworkedClient.Instance.roomName;
         NetworkedClient.Instance.SendMessageToHost(reset);
         Debug.Log("MessageSent to Server");
     }
@@ -383,19 +393,18 @@ public void LeaveGame()
 
     public void NotifyServer(int buttonIndex, int turnOfPlayerX)
     {
-        Debug.Log("PLAYERMOVED, Pressed button at index " + buttonIndex + " and it was turnofPlayer = " + turnOfPlayerX);
-        string playerMoved = "4," + buttonIndex.ToString() + "," + turnOfPlayerX.ToString();
+      
+        string playerMoved = ClientToServerSignifiers.playerMoved + "," + buttonIndex.ToString() + "," + turnOfPlayerX.ToString();
         NetworkedClient.Instance.SendMessageToHost(playerMoved);
-        Debug.Log("MessageSent to Server");
     }
 
     public void LeaveGameNotification()
     {
         if(!isSpectator)
         {
-            string playerLeftRoomX = "6," + NetworkedClient.Instance.roomName;
+            string playerLeftRoomX =  ClientToServerSignifiers.LeaveGameNotification + "," + NetworkedClient.Instance.roomName;
             NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
-            Debug.Log("MessageSent to Server");
+          
         }
         else
         {
@@ -405,9 +414,8 @@ public void LeaveGame()
 
   public void SaveReplay()
     {
-        string integerofplayer = "8," + turnofPlayer.ToString() + "," + replayName.text.ToString();
+        string integerofplayer = ClientToServerSignifiers.SaveReplayData + "," + turnofPlayer.ToString() + "," + replayName.text.ToString();
         NetworkedClient.Instance.SendMessageToHost(integerofplayer);
-        Debug.Log("Saving replay into Server");
         messagetoPlayer.GetComponent<Text>().text = "Match replay saved!";
         saveReplayButton.gameObject.GetComponent<Button>().interactable = false;
         replayName.text = "";
@@ -415,27 +423,27 @@ public void LeaveGame()
     }
    public  void HelloClicked()
     {
-        string msg = "7," + "Hello!" ;
+        string msg = ClientToServerSignifiers.SendMessageToOtherPlayer + "," + "Hello!" ;
         NetworkedClient.Instance.SendMessageToHost(msg);
     }
     public void complimentClicked()
     {
-        string msg = "7," + "Hey! Nice move!";
+        string msg = ClientToServerSignifiers.SendMessageToOtherPlayer + "," + "Hey! Nice move!";
         NetworkedClient.Instance.SendMessageToHost(msg);
     }
     public void rematchClicked()
     {
-        string msg = "7," + "Do you want to play again?";
+        string msg = ClientToServerSignifiers.SendMessageToOtherPlayer + "," + "Do you want to play again?";
         NetworkedClient.Instance.SendMessageToHost(msg);
     }
     public void noClicked()
     {
-        string msg = "7," + "NO!";
+        string msg = ClientToServerSignifiers.SendMessageToOtherPlayer + "," + "NO!";
         NetworkedClient.Instance.SendMessageToHost(msg);
     }
     public void yesClicked()
     {
-        string msg = "7," + "YES!";
+        string msg = ClientToServerSignifiers.SendMessageToOtherPlayer + "," + "YES!";
         NetworkedClient.Instance.SendMessageToHost(msg);
     }
     public IEnumerator DisableMessage2()

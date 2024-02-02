@@ -6,9 +6,8 @@ using UnityEngine.UI;
 
 public class ControllerManager : MonoBehaviour
 {
-    int buttonindexReplay;
-    int turnOfReplay = 0;
-    public int turnofPlayer; // 0 = X player  & 1 = O Player
+    private ReplayManager replayManager;
+    public int turnoOfPlayer; // 0 = X player  & 1 = O Player
     public int turnCount;
     public GameObject[] turnDisplay;//shows whos turn it is
     public Sprite[] playerIcons;
@@ -43,6 +42,8 @@ public class ControllerManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        replayManager = gameObject.AddComponent<ReplayManager>();
+        replayManager.Initialize(this);
     }
  
     public void gameSetUp()
@@ -50,7 +51,7 @@ public class ControllerManager : MonoBehaviour
        if(!isSpectator && !isReplayMode)
         {
             isInGameRoom = true;
-            turnofPlayer = NetworkedClient.Instance.turnOfPlayer;
+            turnoOfPlayer = NetworkedClient.Instance.turnOfPlayer;
         }
 
         Debug.Log("GAME SETUP");
@@ -79,12 +80,12 @@ public class ControllerManager : MonoBehaviour
             usedButton[i] = -200;
         }
 
-        if(turnofPlayer == 1 && !isSpectator)
+        if(turnoOfPlayer == 1 && !isSpectator)
         {
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
         }
-        if(turnofPlayer == 0 && !isSpectator)
+        if(turnoOfPlayer == 0 && !isSpectator)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -102,54 +103,13 @@ public class ControllerManager : MonoBehaviour
                 playerSpaces[i].interactable = false;// make all the buttons interactables
                 playerSpaces[i].GetComponent<Image>().sprite = null;
             }
-            StartCoroutine(ReplayMoves());
+            StartCoroutine(replayManager.ReplayMoves());
         }
     }
-    public  IEnumerator ReplayMoves()
-    {
-
-
-        for (int i = 0; i < NetworkedClient.Instance.playerdata.Length; i++)
-        {
-        
-            yield return new WaitForSeconds(1.5f);
-
-            buttonindexReplay = int.Parse(NetworkedClient.Instance.playerdata[i].ToString());
-            onButtonClickedForReplay(buttonindexReplay, turnOfReplay);
-
-            if (turnOfReplay == 0)
-            {
-
-                turnOfReplay = 1;
-
-                turnDisplay[1].SetActive(true);
-                turnDisplay[0].SetActive(false);
-            }
-            else if (turnOfReplay == 1)
-            {
-                turnOfReplay = 0;
-
-                turnDisplay[0].SetActive(true);
-                turnDisplay[1].SetActive(false);
-
-            }
-        }
-        yield return new WaitForSeconds(3.0f);
-
-        LeaveGame();
-      
-    }
+    
     void Update()
     {
-
-        if (theGameIsDone && (!isSpectator && !isReplayMode))
-        {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-            saveReplayButton.gameObject.SetActive(true);
-            replayName.gameObject.SetActive(true);
-            resetGameButton.gameObject.SetActive(true);
-        }
+        UpdateCursorVisibility();
         if (isSpectator)
         {
             Cursor.visible = true;
@@ -167,15 +127,15 @@ public class ControllerManager : MonoBehaviour
     {
         Debug.Log("Button Pressed at index =>" + buttonIndex);
         turnCount++;
-        playerSpaces[buttonIndex].image.sprite = playerIcons[turnofPlayer];
+        playerSpaces[buttonIndex].image.sprite = playerIcons[turnoOfPlayer];
         playerSpaces[buttonIndex].interactable = false;
-        usedButton[buttonIndex] = turnofPlayer + 1;
+        usedButton[buttonIndex] = turnoOfPlayer + 1;
 
-        NotifyServer(buttonIndex, turnofPlayer);
+        NotifyServer(buttonIndex, turnoOfPlayer);
 
         if (turnCount > 4)
         {
-            CheckWinCondition(turnofPlayer);
+            CheckWinCondition(turnoOfPlayer);
         }
 
         if (turnCount >= 9)
@@ -187,12 +147,12 @@ public class ControllerManager : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
-        if (turnofPlayer == 0)
+        if (turnoOfPlayer == 0)
         {
             turnDisplay[1].SetActive(true);
             turnDisplay[0].SetActive(false);
         }
-        if (turnofPlayer == 1)
+        if (turnoOfPlayer == 1)
         {
           
             turnDisplay[0].SetActive(true);
@@ -218,10 +178,6 @@ public class ControllerManager : MonoBehaviour
         {
             theGameIsDone = true;
         }
-
-
-
-
     }
     public void reciveButtonClicked(int buttonIndex, int playerTurn)
     {
@@ -237,15 +193,13 @@ public class ControllerManager : MonoBehaviour
             CheckWinCondition(playerTurn);
         }
 
-
-        
         if(!theGameIsDone)
         {
             if (playerTurn == 0)
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
-                turnofPlayer = 1;
+                turnoOfPlayer = 1;
                 turnDisplay[1].SetActive(true);
                 turnDisplay[0].SetActive(false);
 
@@ -254,15 +208,12 @@ public class ControllerManager : MonoBehaviour
             {
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
-                turnofPlayer = 0;
+                turnoOfPlayer = 0;
                 turnDisplay[0].SetActive(true);
                 turnDisplay[1].SetActive(false);
 
             }
         }
-        
-
-      
     }
     public void CheckWinCondition(int turnOfPlayer) // 8 possibles way to win //3 horizontal lines //3 vertical lines and 2 diagonal lines
     {
@@ -297,31 +248,24 @@ public class ControllerManager : MonoBehaviour
 
     void DisplayWinState(int index, int turnofPlayer)
     {
-        
         theGameIsDone = true;
-
         if (turnofPlayer == 0)
         {
             winnerText.text = "Player " + index + " Wins!";
-
             Player1Score++;
-
             player1ScoreText.text = Player1Score.ToString();
         }
         else if(turnofPlayer == 1)
         {
             winnerText.text = "Player " + index + " Wins!";
-
             Player2Score++;
             player2ScoreText.text = Player2Score.ToString();
         }
         if(!isReplayMode)
         {
-
             for (int i = 0; i < playerSpaces.Length; i++)
             {
                 playerSpaces[i].interactable = false;//disable buttons
-
             }
         }
        
@@ -361,9 +305,9 @@ public class ControllerManager : MonoBehaviour
 
 public void LeaveGame()
     {
-        turnOfReplay = 0;
+        replayManager.SetTurnOfReplay(0);
         turnCount = 0;
-        turnofPlayer = 0;
+        turnoOfPlayer = 0;
         Player1Score = 0;
         Player2Score = 0;
         player1ScoreText .text= "";
@@ -393,7 +337,6 @@ public void LeaveGame()
 
     public void NotifyServer(int buttonIndex, int turnOfPlayerX)
     {
-      
         string playerMoved = ClientToServerSignifiers.playerMoved + "," + buttonIndex.ToString() + "," + turnOfPlayerX.ToString();
         NetworkedClient.Instance.SendMessageToHost(playerMoved);
     }
@@ -404,7 +347,6 @@ public void LeaveGame()
         {
             string playerLeftRoomX =  ClientToServerSignifiers.LeaveGameNotification + "," + NetworkedClient.Instance.roomName;
             NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
-          
         }
         else
         {
@@ -412,15 +354,7 @@ public void LeaveGame()
         }
     }
 
-  public void SaveReplay()
-    {
-        string integerofplayer = ClientToServerSignifiers.SaveReplayData + "," + turnofPlayer.ToString() + "," + replayName.text.ToString();
-        NetworkedClient.Instance.SendMessageToHost(integerofplayer);
-        messagetoPlayer.GetComponent<Text>().text = "Match replay saved!";
-        saveReplayButton.gameObject.GetComponent<Button>().interactable = false;
-        replayName.text = "";
-        StartCoroutine(DisableMessage2());
-    }
+
    public  void HelloClicked()
     {
         string msg = ClientToServerSignifiers.SendMessageToOtherPlayer + "," + "Hello!" ;
@@ -449,10 +383,29 @@ public void LeaveGame()
     public IEnumerator DisableMessage2()
     {
         yield return new WaitForSeconds(2.0f);
-        messagetoPlayer.GetComponent<Text>().text = "";
-       
+        messagetoPlayer.GetComponent<Text>().text = ""; 
+    }
+    private void UpdateCursorVisibility()
+    {
+        if (theGameIsDone && (!isSpectator && !isReplayMode))
+        {
+            SetCursorVisibility(true);
+            saveReplayButton.gameObject.SetActive(true);
+            replayName.gameObject.SetActive(true);
+            resetGameButton.gameObject.SetActive(true);
+        }
+   
+    }
+
+    public void SetCursorVisibility(bool isVisible)
+    {
+        Cursor.visible = isVisible;
+        Cursor.lockState = isVisible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
 
 
+
 }
+
+

@@ -56,142 +56,134 @@ public class SystemManager : MonoBehaviour
      
         if(NetworkedClient.Instance.messageFromServer >= 0)
         {
-            ShowMessage();
+            HandleInGameEvents();
             NetworkedClient.Instance.messageFromServer = -1;
         }
         
     }
     //FUNCTION TO HANDLE EVENTS IN GAME
-    public void ShowMessage()
+    public void HandleInGameEvents()
     {
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.AcessGranted)
-        {
-            messageInfo.SetActive(false);
-            messageAGranted.SetActive(true);
-            StartCoroutine(DisableMessage());
-            StartCoroutine(AccessGranted());
-           
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.AccountNameAlreadyExist)
-        {
-            messageInfo.GetComponent<Text>().text = "Username already exists ";
-            StartCoroutine(DisableMessage());
-        }
-        if (NetworkedClient.Instance.messageFromServer ==  ServerToClientSignifiers.WrongUsername)
-        {
-            messageInfo.SetActive(false);
-            messageWrongUsername.SetActive(true);
-            StartCoroutine(DisableMessage());
-           
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.WrongPassword)
-        {
-            messageInfo.SetActive(false);
-            messageADenied.SetActive(true);
-            StartCoroutine(DisableMessage());
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.AccountCreatedSuccessfully)
-        {
-            messageInfo.GetComponent<Text>().text = "Account created, please login!";
-            StartCoroutine(DisableMessage());
-         
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.RoomCreated) 
-        {
-            newGameRoom.gameObject.SetActive(true);
-            string roomName = NetworkedClient.Instance.s_RoomName.ToString();
-            jointoRoom(roomName);
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.JoinRoomX)
-        {
-            newGameRoom.gameObject.SetActive(true);
-            inputBoxForNewGameRoom.SetActive(false);
-            string roomName = NetworkedClient.Instance.s_RoomName.ToString();
-            GameIsReady = true;
-            jointoRoom(roomName);
+        int MessageFromServer = NetworkedClient.Instance.messageFromServer;
 
-            if(ControllerManager.Instance.isSpectator)
-            {
+        switch (MessageFromServer)
+        {
+            case ServerToClientSignifiers.AcessGranted:
+                messageInfo.SetActive(false);
+                messageAGranted.SetActive(true);
+                StartCoroutine(DisableMessage());
+                StartCoroutine(AccessGranted());
+                break;
+
+            case ServerToClientSignifiers.AccountNameAlreadyExist:
+                messageInfo.GetComponent<Text>().text = "Username already exists ";
+                StartCoroutine(DisableMessage());
+                break;
+
+            case ServerToClientSignifiers.WrongUsername:
+                messageInfo.SetActive(false);
+                messageWrongUsername.SetActive(true);
+                StartCoroutine(DisableMessage());
+                break;
+
+            case ServerToClientSignifiers.WrongPassword:
+                messageInfo.SetActive(false);
+                messageADenied.SetActive(true);
+                StartCoroutine(DisableMessage());
+                break;
+
+            case ServerToClientSignifiers.AccountCreatedSuccessfully:
+                messageInfo.SetActive(true);
+                messageInfo.GetComponent<Text>().text = "Account created, please login!";
+                Debug.Log("Account created");
+                StartCoroutine(DisableMessage());
+                break;
+
+            case ServerToClientSignifiers.RoomCreated:
+
+                newGameRoom.gameObject.SetActive(true);
+                string roomName = NetworkedClient.Instance.s_RoomName.ToString();
+                jointoRoom(roomName);
+                break;
+
+            case ServerToClientSignifiers.JoinRoomX:
+                newGameRoom.gameObject.SetActive(true);
+                inputBoxForNewGameRoom.SetActive(false);
+                string roomName2Join = NetworkedClient.Instance.s_RoomName.ToString();
+                GameIsReady = true;
+                jointoRoom(roomName2Join);
+
+                if (ControllerManager.Instance.isSpectator)
+                {
+                    GameReady();
+                    ControllerManager.Instance.gameSetUp();
+                }
+                break;
+
+            case ServerToClientSignifiers.StartMatch:
                 GameReady();
                 ControllerManager.Instance.gameSetUp();
-            }
-        
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.StartMatch)
-        {
-            GameReady();
-            ControllerManager.Instance.gameSetUp();
-        }
+                break;
 
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.PlayerXMadeAMove)
-        {
-            ControllerManager.Instance.reciveButtonClicked(NetworkedClient.Instance.buttonIndex, NetworkedClient.Instance.turnOfPlayer);
-          
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.RestartMatch)
-        {
-            ControllerManager.Instance.ResetGameVariables();
-        }
+            case ServerToClientSignifiers.PlayerXMadeAMove:
+                ControllerManager.Instance.reciveButtonClicked(NetworkedClient.Instance.buttonIndex, NetworkedClient.Instance.turnOfPlayer);
+                break;
 
-        if(NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.UserAlreadyLogged)
-        {
+            case ServerToClientSignifiers.RestartMatch:
+                ControllerManager.Instance.ResetGameVariables();
+                break;
 
-            messageInfo.GetComponent<Text>().text = "Username already logged in";
-            StartCoroutine(DisableMessage());
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.LeaveGameRoom)
-        {
-            ControllerManager.Instance.LeaveGame();
-            deactivate();
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.DisplayMessageInScreen)
-        {
-            ControllerManager.Instance.messagetoPlayer.text = NetworkedClient.Instance.displayMessageInScree;
-            StartCoroutine(ControllerManager.Instance.DisableMessage2());
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.GetReplayData)
-        {
-           if(!isDataAlreadyRecived)
-            {
+            case ServerToClientSignifiers.UserAlreadyLogged:
+                messageInfo.GetComponent<Text>().text = "Username already logged in";
+                StartCoroutine(DisableMessage());
+                break;
 
-                foreach (var item in NetworkedClient.Instance.clipName)
+            case ServerToClientSignifiers.LeaveGameRoom:
+                ControllerManager.Instance.LeaveGame();
+                deactivate();
+                break;
+
+            case ServerToClientSignifiers.DisplayMessageInScreen:
+                ControllerManager.Instance.messagetoPlayer.text = NetworkedClient.Instance.displayMessageInScree;
+                StartCoroutine(ControllerManager.Instance.DisableMessage2());
+                break;
+
+            case ServerToClientSignifiers.GetReplayData:
+                if (!isDataAlreadyRecived)
                 {
-                    dropdown.transform.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = item });
+                    foreach (var item in NetworkedClient.Instance.clipName)
+                    {
+                        dropdown.transform.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = item });
+                    }
+
+                    NetworkedClient.Instance.clipName.Clear();
+
+                    dropdown.transform.GetComponent<Dropdown>().onValueChanged.AddListener(delegate
+                    {
+                        var drop = dropdown.transform.GetComponent<Dropdown>();
+                        itemSelected(drop);
+                    });
                 }
+                break;
 
-                NetworkedClient.Instance.clipName.Clear();
+            case ServerToClientSignifiers.ReplayModeOn:
+                playButton.gameObject.SetActive(false);
+                dropdown.gameObject.SetActive(false);
+                inputBoxForNewGameRoom.SetActive(false);
+                newGame.gameObject.SetActive(true);
+                ControllerManager.Instance.isReplayMode = true;
+                ControllerManager.Instance.gameSetUp();
+                break;
 
-                dropdown.transform.GetComponent<Dropdown>().onValueChanged.AddListener(
-                       delegate
-                       {
-                           var drop = dropdown.transform.GetComponent<Dropdown>();
-                           itemSelected(drop);
-                       });
-            }
-          
-           
+            case ServerToClientSignifiers.DataConfirmation:
+                isDataAlreadyRecived = true;
+                break;
 
+            case ServerToClientSignifiers.LeaveGameRoomLobby:
+                LeaveGameRoomLobby();
+                break;
         }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.ReplayModeOn)
-        {
-            playButton.gameObject.SetActive(false);
-            dropdown.gameObject.SetActive(false);
-            inputBoxForNewGameRoom.SetActive(false);
-            newGame.gameObject.SetActive(true);
-            ControllerManager.Instance.isReplayMode = true;
-            ControllerManager.Instance.gameSetUp();
-        }
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.DataConfirmation)
-        {
-            isDataAlreadyRecived = true;
-        }
-
-        if (NetworkedClient.Instance.messageFromServer == ServerToClientSignifiers.LeaveGameRoomLobby)
-        {
-            LeaveGameRoomLobby();
-        }
-
-     }
+    }
 
 
     #region FUNCTIONS TO LET KNOW SERVER ABOUT NEW ACCOUNT CREATION /LOGGING VERIFICATION/ && EVENTS IN LOGING BOX SCENE

@@ -25,7 +25,7 @@ public class SystemManager : MonoBehaviour
     [SerializeField] public InputField gameRoomName;
 
     [Header("RoomName")]
-    [SerializeField] public Text roomName1;
+    [SerializeField] public GameObject roomName1;
 
     [Header("UserCreation")]
     [SerializeField]GameObject newUser;
@@ -182,6 +182,13 @@ public class SystemManager : MonoBehaviour
             case ServerToClientSignifiers.LeaveGameRoomLobby:
                 LeaveGameRoomLobby();
                 break;
+
+            case ServerToClientSignifiers.InvalidAccountInformation:
+
+                messageInfo.SetActive(true);
+                messageInfo.GetComponent<Text>().text = "Invalid username or password. \n Please make sure \n you've entered a valid \n username and password\n combination.";
+                StartCoroutine(DisableMessage());
+                break;
         }
     }
 
@@ -231,12 +238,35 @@ public class SystemManager : MonoBehaviour
     }
     public void jointoRoom(string roomName)
     {
-      
-        if(roomName1.IsActive())
-        roomName1.GetComponent<Text>().text = roomName;
+ 
+        Transform nameTransform = transform.Find("Name");
+        Transform roomName1Transform = nameTransform.Find("RoomName");
+
+        // Check if roomName1 is found
+        if (roomName1Transform == null)
+        {
+            Debug.LogError("RoomName not found within 'Name' GameObject!");
+            return;
+        }
+
+        // Get the Text component of roomName1
+        Text roomNameText = roomName1Transform.GetComponent<Text>();
+
+        // Check if Text component is found
+        if (roomNameText == null)
+        {
+            Debug.LogError("RoomName does not have a Text component!");
+            return;
+        }
+
+        // Set the text if all checks pass
+        roomNameText.text = roomName;
+
         inputBoxForNewGameRoom.SetActive(false);
-        roomNameString = roomName;
-        if(GameIsReady && !ControllerManager.Instance.isSpectator)
+        inputBoxForNewGameRoom.SetActive(false);
+      
+
+        if (GameIsReady && !ControllerManager.Instance.isSpectator)
         {
             string startGame = ClientToServerSignifiers.GameisReady + "," + GetGameRoomName().ToString();
             NetworkedClient.Instance.SendMessageToHost(startGame);
@@ -246,10 +276,11 @@ public class SystemManager : MonoBehaviour
     {
         inputBoxForNewGameRoom.SetActive(true);
         newGameRoom.SetActive(false);
+        roomNameString = roomName1.GetComponent<Text>().text;
+        Debug.Log("Leaving " + roomNameString);
         roomName1.GetComponent<Text>().text = "";
        string LeaveGameRoomLobby = ClientToServerSignifiers.LeaveGameRoomLobby + "," + roomNameString;
         NetworkedClient.Instance.SendMessageToHost(LeaveGameRoomLobby);
-
         roomNameString = "";
     }    
     public void GameReady()
@@ -333,7 +364,11 @@ public class SystemManager : MonoBehaviour
     public IEnumerator DisableMessage()
     {
         yield return new WaitForSeconds(2.0f);
-        messageInfo.GetComponent<Text>().text = "Please fill with name\r\n and password";
+        if(messageInfo != null )
+        {
+            messageInfo.GetComponent<Text>().text = "Please fill with name\r\n and password";
+        }
+
         messageAGranted.SetActive(false);
         messageADenied.SetActive(false);
         messageWrongUsername.SetActive(false);

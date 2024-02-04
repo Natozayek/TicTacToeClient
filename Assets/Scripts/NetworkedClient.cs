@@ -161,7 +161,7 @@ public class NetworkedClient : MonoBehaviour
                 messageFromServer = 6;//Join Game Room
        
                 s_RoomName = dataReceived[1].ToString();
-                Debug.Log("Message from server =>//Joinining Game Room" + s_RoomName);
+                Debug.Log("Message from server =>//Joinining Game Room " + s_RoomName);
                 break;
             case ServerToClientSignifiers.StartMatch:
                 roomName = dataReceived[1].ToString();
@@ -227,6 +227,11 @@ public class NetworkedClient : MonoBehaviour
                 messageFromServer = 17;
                 Debug.Log("Message from server => Data confirmed");
                 break;
+
+            case ServerToClientSignifiers.InvalidAccountInformation:
+                messageFromServer = 20;
+                Debug.Log("Message from server => Invalid username or password");
+                break;
         }
         
 
@@ -276,6 +281,6 @@ static public class ServerToClientSignifiers
      public const int ReplayModeOn = 16;
      public const int DataConfirmation = 17;
      public const int LeaveGameRoomLobby = 14;
-               
+     public const int InvalidAccountInformation = 20;
 
 }

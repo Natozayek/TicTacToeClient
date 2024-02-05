@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ReplayManager : MonoBehaviour
+public class ReplayController : MonoBehaviour
 {
     private int buttonindexReplay;
     private int turnOfReplay = 0;
@@ -53,5 +53,4 @@ public class ReplayManager : MonoBehaviour
         controllerManager.replayName.text = "";
         StartCoroutine(controllerManager.DisableMessage2());
     }
-
 }

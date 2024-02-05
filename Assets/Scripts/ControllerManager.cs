@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ControllerManager : MonoBehaviour
 {
-    private ReplayManager replayManager;
+    private ReplayController replayManager;
     public int turnoOfPlayer; // 0 = X player  & 1 = O Player
     public int turnCount;
     public GameObject[] turnDisplay;//shows whos turn it is
@@ -42,7 +42,7 @@ public class ControllerManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        replayManager = gameObject.AddComponent<ReplayManager>();
+        replayManager = gameObject.AddComponent<ReplayController>();
         replayManager.Initialize(this);
     }
  
@@ -276,14 +276,20 @@ public class ControllerManager : MonoBehaviour
 
     }
 
-    public void ResetGameVariables()
+    public void RestartMatchNResetVariables()
     {
-        theGameIsDone=false;
+        ResetingVariableForRematch();
+        gameSetUp();
+    }
+
+    private void ResetingVariableForRematch()
+    {
+        theGameIsDone = false;
         saveReplayButton.gameObject.GetComponent<Button>().interactable = true;
         resetGameButton.gameObject.SetActive(false);
         saveReplayButton.gameObject.SetActive(false);
         replayName.gameObject.SetActive(false);
-  
+
         for (int i = 0; i < winLines.Length; i++)
         {
             winLines[i].SetActive(false);//Disable all lines
@@ -291,8 +297,6 @@ public class ControllerManager : MonoBehaviour
         winnerText.text = " Playing";
         player1ScoreText.text = Player1Score.ToString();
         player2ScoreText.text = Player2Score.ToString();
-
-        gameSetUp();
     }
 
     public void ResetGame()
@@ -303,59 +307,96 @@ public class ControllerManager : MonoBehaviour
         Debug.Log("MessageSent to Server");
     }
 
-public void LeaveGame()
+    public void LeaveGame()
+    {
+        ResetVariables();
+        ResetGameUI();
+        DisableGameUIElements();
+        DisableWinLines();
+        LeaveGameSystemManager();
+        ClearPlayerData();
+    }
+
+    private void ResetVariables()
     {
         replayManager.SetTurnOfReplay(0);
         turnCount = 0;
         turnoOfPlayer = 0;
         Player1Score = 0;
         Player2Score = 0;
-        player1ScoreText .text= "";
-        player1ScoreText.text = "";
-        player2ScoreText.text = "";
         theGameIsDone = false;
-        isInGameRoom = false;
         isSpectator = false;
         isReplayMode = false;
-        Cursor.visible = true;
-        Cursor.lockState = CursorLockMode.None;
+    }
 
+    private void ResetGameUI()
+    {
+        player1ScoreText.text = "";
+        player2ScoreText.text = "";
+    }
+
+    private void DisableGameUIElements()
+    {
         resetGameButton.gameObject.SetActive(false);
         leaveGameButton.gameObject.SetActive(false);
         saveReplayButton.gameObject.SetActive(false);
         replayName.gameObject.SetActive(false);
-
-        for (int i = 0; i < winLines.Length; i++)
-        {
-            winLines[i].SetActive(false);//Disable all lines
-        }
-
-        SystemManager.Instance.LeaveGame();
-        NetworkedClient.Instance.playerdata = "";
-        Debug.Log(NetworkedClient.Instance.playerdata);
     }
 
+    private void DisableWinLines()
+    {
+        for (int i = 0; i < winLines.Length; i++)
+        {
+            winLines[i].SetActive(false);
+        }
+    }
+
+    private void LeaveGameSystemManager()
+    {
+        SystemManager.Instance.LeaveGame();
+    }
+
+    private void ClearPlayerData()
+    {
+        if (NetworkedClient.Instance != null)
+        {
+            NetworkedClient.Instance.playerdata = "";
+            Debug.Log(NetworkedClient.Instance.playerdata);
+        }
+        else
+        {
+            Debug.LogError("NetworkedClient.Instance is null. Unable to clear player data.");
+        }
+    }
     public void NotifyServer(int buttonIndex, int turnOfPlayerX)
     {
         string playerMoved = ClientToServerSignifiers.playerMoved + "," + buttonIndex.ToString() + "," + turnOfPlayerX.ToString();
         NetworkedClient.Instance.SendMessageToHost(playerMoved);
     }
-
     public void LeaveGameNotification()
     {
-        if(!isSpectator)
+        if (!isSpectator)
         {
-            string playerLeftRoomX =  ClientToServerSignifiers.LeaveGameNotification + "," + NetworkedClient.Instance.roomName;
-            NetworkedClient.Instance.SendMessageToHost(playerLeftRoomX);
+            if (NetworkedClient.Instance != null)
+            {
+                string leaveGameMessage = ClientToServerSignifiers.PlayerLeftGame + "," + NetworkedClient.Instance.roomName;
+                NetworkedClient.Instance.SendMessageToHost(leaveGameMessage);
+            }
+            else
+            {
+                Debug.LogError("NetworkedClient.Instance is null. Unable to send leave game message.");
+            }
         }
         else
         {
             LeaveGame();
         }
     }
-
-
-   public  void HelloClicked()
+    public void SaveReplay()
+    {
+        replayManager.SaveReplay();
+    }
+    public  void HelloClicked()
     {
         string msg = ClientToServerSignifiers.SendMessageToOtherPlayer + "," + "Hello!" ;
         NetworkedClient.Instance.SendMessageToHost(msg);

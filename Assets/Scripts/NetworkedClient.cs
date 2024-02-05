@@ -195,7 +195,7 @@ public class NetworkedClient : MonoBehaviour
                 messageFromServer = 10;
                 Debug.Log("Message from server => ERROR - Access Denied - User already logged");
                 break;
-            case ServerToClientSignifiers.LeaveGameRoom:
+            case ServerToClientSignifiers.PlayerLeftGameRoom:
                 messageFromServer = 11;
                 Debug.Log("Message from server => ERROR - Leaving Game Room");
                 break;
@@ -210,7 +210,9 @@ public class NetworkedClient : MonoBehaviour
                 Debug.Log("Message from server => Spectator mode is ON");
                 break;
             case ServerToClientSignifiers.GetReplayData:
-                clipName.Add(dataReceived[1].ToString());
+                string fileName = dataReceived[1].ToString();
+                Debug.Log("Getting File: " + fileName);
+                clipName.Add(fileName);
                 messageFromServer = 15;
                 Debug.Log("Message from server => Getting replay data");
                 break;
@@ -232,6 +234,11 @@ public class NetworkedClient : MonoBehaviour
                 messageFromServer = 20;
                 Debug.Log("Message from server => Invalid username or password");
                 break;
+
+            case ServerToClientSignifiers.NoReplayDataSaved:
+                messageFromServer = 20;
+                Debug.Log("Message from server => ERROR - there is no data saved");
+                break;
         }
         
 
@@ -250,7 +257,7 @@ static public class ClientToServerSignifiers
     static public int GameisReady = 3;
     static public int playerMoved = 4;
     static public int RestartMatch = 5;
-    static public int LeaveGameNotification = 6;
+    static public int PlayerLeftGame = 6;
     static public int SendMessageToOtherPlayer = 7;
     static public int SaveReplayData = 8;
     static public int SpectateRoom = 9;
@@ -274,7 +281,7 @@ static public class ServerToClientSignifiers
      public const int PlayerXMadeAMove = 8;
      public const int RestartMatch = 9;
      public const int UserAlreadyLogged = 10;
-     public const int LeaveGameRoom = 11;
+     public const int PlayerLeftGameRoom = 11;
      public const int DisplayMessageInScreen = 12;
      public const int SpectatorModeIsON = 13;
      public const int GetReplayData =15;
@@ -282,5 +289,6 @@ static public class ServerToClientSignifiers
      public const int DataConfirmation = 17;
      public const int LeaveGameRoomLobby = 14;
      public const int InvalidAccountInformation = 20;
+     public const int NoReplayDataSaved = 21;
 
 }

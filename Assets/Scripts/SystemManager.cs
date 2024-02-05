@@ -130,7 +130,7 @@ public class SystemManager : MonoBehaviour
                 break;
 
             case ServerToClientSignifiers.RestartMatch:
-                ControllerManager.Instance.ResetGameVariables();
+                ControllerManager.Instance.RestartMatchNResetVariables();
                 break;
 
             case ServerToClientSignifiers.UserAlreadyLogged:
@@ -138,7 +138,7 @@ public class SystemManager : MonoBehaviour
                 StartCoroutine(DisableMessage());
                 break;
 
-            case ServerToClientSignifiers.LeaveGameRoom:
+            case ServerToClientSignifiers.PlayerLeftGameRoom:
                 ControllerManager.Instance.LeaveGame();
                 deactivate();
                 break;
@@ -149,21 +149,7 @@ public class SystemManager : MonoBehaviour
                 break;
 
             case ServerToClientSignifiers.GetReplayData:
-                if (!isDataAlreadyRecived)
-                {
-                    foreach (var item in NetworkedClient.Instance.clipName)
-                    {
-                        dropdown.transform.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = item });
-                    }
-
-                    NetworkedClient.Instance.clipName.Clear();
-
-                    dropdown.transform.GetComponent<Dropdown>().onValueChanged.AddListener(delegate
-                    {
-                        var drop = dropdown.transform.GetComponent<Dropdown>();
-                        itemSelected(drop);
-                    });
-                }
+                GetReplayClips();
                 break;
 
             case ServerToClientSignifiers.ReplayModeOn:
@@ -189,6 +175,31 @@ public class SystemManager : MonoBehaviour
                 messageInfo.GetComponent<Text>().text = "Invalid username or password. \n Please make sure \n you've entered a valid \n username and password\n combination.";
                 StartCoroutine(DisableMessage());
                 break;
+            case ServerToClientSignifiers.NoReplayDataSaved:
+
+                messageInfo.SetActive(true);
+                messageInfo.GetComponent<Text>().text = "ERROR - NO DATA SAVED.";
+                StartCoroutine(ErrorNoDataSaved());
+                break;
+        }
+    }
+
+    private void GetReplayClips()
+    {
+        if (!isDataAlreadyRecived)
+        {
+            foreach (var item in NetworkedClient.Instance.clipName)
+            {
+                dropdown.transform.GetComponent<Dropdown>().options.Add(new Dropdown.OptionData() { text = item });
+            }
+
+            NetworkedClient.Instance.clipName.Clear();
+
+            dropdown.transform.GetComponent<Dropdown>().onValueChanged.AddListener(delegate
+            {
+                var drop = dropdown.transform.GetComponent<Dropdown>();
+                itemSelected(drop);
+            });
         }
     }
 
@@ -268,7 +279,8 @@ public class SystemManager : MonoBehaviour
 
         if (GameIsReady && !ControllerManager.Instance.isSpectator)
         {
-            string startGame = ClientToServerSignifiers.GameisReady + "," + GetGameRoomName().ToString();
+            Debug.Log("Game is Ready");
+            string startGame = ClientToServerSignifiers.GameisReady + "," + roomName;
             NetworkedClient.Instance.SendMessageToHost(startGame);
         }
     }
@@ -298,8 +310,6 @@ public class SystemManager : MonoBehaviour
     }
     public void WatchReplay()
     {
-        dropdown.gameObject.SetActive(true);
-        playButton.gameObject.SetActive(true);
         string dropdown2 =  ClientToServerSignifiers.WatchReplay + ",";
         NetworkedClient.Instance.SendMessageToHost(dropdown2);
     }
@@ -367,6 +377,23 @@ public class SystemManager : MonoBehaviour
         if(messageInfo != null )
         {
             messageInfo.GetComponent<Text>().text = "Please fill with name\r\n and password";
+        }
+
+        messageAGranted.SetActive(false);
+        messageADenied.SetActive(false);
+        messageWrongUsername.SetActive(false);
+
+        //Reseting vaiables in loging box
+        username.text = "";
+        password.text = "";
+    }
+
+    public IEnumerator ErrorNoDataSaved()
+    {
+        yield return new WaitForSeconds(2.0f);
+        if (messageInfo != null)
+        {
+            messageInfo.GetComponent<Text>().text = "";
         }
 
         messageAGranted.SetActive(false);

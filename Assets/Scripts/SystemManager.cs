@@ -32,7 +32,8 @@ public class SystemManager : MonoBehaviour
 
     [Header("UIMessages")]
     public GameObject messageInfo, messageAGranted, messageADenied, messageWrongUsername, messageUsernameAlreadyExist1, messageAccountHasBeenCreated, loginBox, inputBoxForNewGameRoom, newGameRoom, newGame;
- 
+
+    [SerializeField] private GameObject ErrorMessage;
     [Header("UIButtons&Dropwdown")]
     [SerializeField] public GameObject playButton;
     [SerializeField]public GameObject dropdown;
@@ -177,8 +178,7 @@ public class SystemManager : MonoBehaviour
                 break;
             case ServerToClientSignifiers.NoReplayDataSaved:
 
-                messageInfo.SetActive(true);
-                messageInfo.GetComponent<Text>().text = "ERROR - NO DATA SAVED.";
+                ErrorMessage.GetComponent<Text>().text = "ERROR - NO DATA SAVED.";
                 StartCoroutine(ErrorNoDataSaved());
                 break;
         }
@@ -391,18 +391,10 @@ public class SystemManager : MonoBehaviour
     public IEnumerator ErrorNoDataSaved()
     {
         yield return new WaitForSeconds(2.0f);
-        if (messageInfo != null)
+        if (ErrorMessage != null)
         {
-            messageInfo.GetComponent<Text>().text = "";
+            ErrorMessage.GetComponent<Text>().text = "";
         }
-
-        messageAGranted.SetActive(false);
-        messageADenied.SetActive(false);
-        messageWrongUsername.SetActive(false);
-
-        //Reseting vaiables in loging box
-        username.text = "";
-        password.text = "";
     }
 
     public IEnumerator AccessGranted()

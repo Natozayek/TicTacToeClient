@@ -4,6 +4,10 @@ using System.Text;
 using System.Xml.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System;
+using System.Net;
 
 public class NetworkedClient : MonoBehaviour
 {
@@ -101,7 +105,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "192.168.0.17", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, GetLocalIpAddress(), socketPort, 0, out error); // server is local on network
             Debug.Log("Client ID: " + connectionID + " trying to connect to server.");
 
             if (error == 0)
@@ -236,7 +240,7 @@ public class NetworkedClient : MonoBehaviour
                 break;
 
             case ServerToClientSignifiers.NoReplayDataSaved:
-                messageFromServer = 20;
+                messageFromServer = 21;
                 Debug.Log("Message from server => ERROR - there is no data saved");
                 break;
         }
@@ -248,7 +252,33 @@ public class NetworkedClient : MonoBehaviour
     {
         sManager = SystemManager;
     }
+    static string GetLocalIpAddress()
+    {
+        try
+        {
+            string hostName = Dns.GetHostName();
+            IPAddress[] localIPs = Dns.GetHostAddresses(hostName);
+
+            foreach (IPAddress ip in localIPs)
+            {
+                // Assuming you want an IPv4 address
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                {
+                    Debug.Log(ip);
+                    return ip.ToString();
+                }
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            return null;
+        }
+    }
 }
+
 static public class ClientToServerSignifiers
 {
     static public int AccessVerification = 0;
